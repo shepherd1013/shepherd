@@ -4,13 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../Log.cpp 
+../Log.cpp \
+../file_util.cpp \
+../network_util.cpp 
 
 OBJS += \
-./Log.o 
+./Log.o \
+./file_util.o \
+./network_util.o 
 
 CPP_DEPS += \
-./Log.d 
+./Log.d \
+./file_util.d \
+./network_util.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
