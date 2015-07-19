@@ -9,11 +9,11 @@
 #include <string.h>
 #include "debug.h"
 
-bool File::Read(FILE *fp, const char *filename)
+bool File::Open(FILE *fp, const char *sFilename)
 {
 	int nRet;
 
-	fp = fopen(filename, "r");
+	fp = fopen(sFilename, "r");
 	if(fp == NULL) {
 		nRet = errno;
 		ERR_PRINT("%s\n", strerror(nRet));

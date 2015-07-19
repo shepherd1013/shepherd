@@ -12,7 +12,7 @@
 class File
 {
 public:
-	static bool	Read(FILE *fp, const char *filename);
+	static bool	Open(FILE *fp, const char *filename);
 	static bool	Close(FILE *fp);
 };
 
