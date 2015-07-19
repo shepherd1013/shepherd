@@ -13,25 +13,51 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/select.h>
+#include <arpa/inet.h>
 
-bool NetworkUtil::EnumerateInterfaceIPv4(list<string> &lList)
+bool NetworkUtil::EnumerateUpInterfaceIPv4(list<string> &lList)
 {
-	DIR *dp;
-	struct dirent *pDir;
+	list<string> lAllIf;
 	bool bRet;
-	int nRet;
-	const char *SYSTEM_NET_PATH = "/sys/class/net";
 	short int nIFFlags;
 
-	dp = opendir(SYSTEM_NET_PATH);
-	if(dp == NULL){
+	bRet = NetworkUtil::EnumerateAllInterfaceIPv4(lAllIf);
+	if (bRet == false) {
+		ERR_PRINT("EnumerateAllInterfaceIPv4() error!\n");
+		return bRet;
+	}
+
+	for (list<string>::iterator it = lAllIf.begin(); it != lAllIf.end(); it++) {
+		bRet = NetworkUtil::GetFlagsIPv4(it->c_str(), &nIFFlags);
+		if (bRet == false) {
+			continue;
+		}
+
+		if (nIFFlags & IFF_UP) {
+			lList.push_back(*it);
+		}
+	}
+
+	return true;
+}
+
+bool NetworkUtil::EnumerateAllInterfaceIPv4(list<string> &lList)
+{
+	DIR *dFD;
+	struct dirent *pDir = NULL;
+	int nRet;
+	const char *SYSTEM_NET_PATH = "/sys/class/net";
+	string sInterfaceName;
+
+	dFD = opendir(SYSTEM_NET_PATH);
+	if(dFD == NULL){
 		nRet = errno;
 		ERR_PRINT("%s\n",strerror(nRet));
 		return false;
 	}
 
-	if (dp) {
-		while ((pDir = readdir(dp)) != NULL) {
+	if (dFD) {
+		while ((pDir = readdir(dFD)) != NULL) {
 			if (strncmp(".", pDir->d_name, strlen(".")) == 0) {
 				continue;
 			}
@@ -41,25 +67,11 @@ bool NetworkUtil::EnumerateInterfaceIPv4(list<string> &lList)
 			}
 
 //			DBG_PRINT("interface name =%s\n", pDir->d_name);
-
-			bRet = NetworkUtil::GetFlagsIPv4(pDir->d_name, &nIFFlags);
-			if(bRet == false){
-				ERR_PRINT("GetFlagsIPv4() error!\n");
-				return bRet;
-			}
-
-//			if (nIFFlags & IFF_LOOPBACK) {
-//				DBG_PRINT("Loop back interface!\n");
-//			}
-
-			if (nIFFlags & IFF_UP) {
-//				DBG_PRINT("%s up!\n", pDir->d_name);
-				string sInterfaceName = pDir->d_name;
-				lList.push_back(sInterfaceName);
-			}
+			sInterfaceName = pDir->d_name;
+			lList.push_back(sInterfaceName);
 		}
 
-		nRet = closedir(dp);
+		nRet = closedir(dFD);
 		if(nRet < 0){
 			nRet = errno;
 			ERR_PRINT("%s\n",strerror(nRet));
@@ -90,22 +102,11 @@ bool NetworkUtil::GetFlagsIPv4(const char* sInterfaceName, short int* nIFFlags)
 	return true;
 }
 
-bool SocketUtil::Socket(int domain, int type, int protocol, int *sFD)
+bool NetworkUtil::InterfaceIndexToName(int nIfIndex, char *sIfName)
 {
-	*sFD = socket(domain, type, protocol);
-	if (*sFD < 0) {
-		*sFD = errno;
-		ERR_PRINT("%s\n", strerror(*sFD));
-		return false;
-	}
-	return true;
-}
-
-bool SocketUtil::Bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
-{
+	char *pRet = if_indextoname(nIfIndex, sIfName);
 	int nRet;
-	nRet = bind(sockfd, addr, addrlen);
-	if (nRet < 0) {
+	if (pRet == NULL) {
 		nRet = errno;
 		ERR_PRINT("%s\n", strerror(nRet));
 		return false;
@@ -113,78 +114,22 @@ bool SocketUtil::Bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen
 	return true;
 }
 
-bool SocketUtil::Setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen)
+unsigned int NetworkUtil::HostToNetworkByteOrder(unsigned int uHost)
 {
-	int nRet;
-	nRet = setsockopt(sockfd, level, optname, optval, optlen);
-	if (nRet < 0) {
-		nRet = errno;
-		ERR_PRINT("%s\n", strerror(nRet));
-		return false;
-	}
-	return true;
+	return htonl(uHost);
 }
 
-bool SocketUtil::Close(int sockfd)
+unsigned short NetworkUtil::HostToNetworkByteOrder(unsigned short uHost)
 {
-	int nRet;
-	if (sockfd >= 0) {
-		nRet = close(sockfd);
-		if (nRet < 0) {
-			nRet = errno;
-			ERR_PRINT("%s\n", strerror(nRet));
-			return false;
-		}
-	}
-	return true;
+	return htons(uHost);
 }
 
-Socket::Socket()
+unsigned int NetworkUtil::NetworkToHostByteOrder(unsigned int uHost)
 {
+	return ntohl(uHost);
 }
 
-Socket::~Socket()
+unsigned short NetworkUtil::NetworkToHostByteOrder(unsigned short uHost)
 {
+	return ntohs(uHost);
 }
-
-bool Socket::Wait(time_t tMS, vector<int> &sEventFD)
-{
-	struct timeval tv;
-	tv.tv_sec = tMS / 1000;
-	tv.tv_usec = (tMS % 1000) * 1000;
-
-	fd_set readfds;
-	FD_ZERO(&readfds);
-	for (vector<int>::iterator it = m_sFD.begin(); it != m_sFD.end(); it++) {
-		FD_SET(*it, &readfds);
-	}
-
-	int nRet = select(m_sFD.back() + 1, &readfds, NULL, NULL, &tv);
-	if (nRet == 0) { // Timeout
-		return false ;
-	}
-
-	if (nRet < 0) {
-		nRet = errno;
-		ERR_PRINT("%s!\n", strerror(nRet));
-		return false;
-	}
-
-	for (vector<int>::iterator it = m_sFD.begin(); it != m_sFD.end(); it++) {
-		nRet = FD_ISSET(*it, &readfds);
-		if (nRet == 0) {
-			continue;
-		}
-	}
-
-	if (sEventFD.empty()) {
-		return false;
-	}
-
-	return true;
-}
-
-//int Socket::GetFD()
-//{
-//	return m_sFD;
-//}

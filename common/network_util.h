@@ -17,6 +17,13 @@ using namespace std;
 class NetworkUtil
 {
 public:
+	static bool EnumerateAllInterfaceIPv4(list<string> &lList);
+	static bool EnumerateUpInterfaceIPv4(list<string> &lList);
+	static bool InterfaceIndexToName(int nIfIndex, char *sIfName);
+	static unsigned int HostToNetworkByteOrder(unsigned int uHost);
+	static unsigned short HostToNetworkByteOrder(unsigned short uHost);
+	static unsigned int  NetworkToHostByteOrder (unsigned int uHost);
+	static unsigned short  NetworkToHostByteOrder (unsigned short uHost);
 	static bool EnumerateInterfaceIPv4(list<string> &lList);
 	static bool GetFlagsIPv4(const char* sInterfaceName, short int* nIFFlags);
 /*
@@ -38,30 +45,6 @@ public:
 		IFF_AUTOMEDIA       自動選擇 media
 		IFF_DYNAMIC         裝置介面關閉時丟棄地址
 */
-};
-
-class SocketUtil
-{
-public:
-	static bool Socket(int domain, int type, int protocol, int *sFD);
-	static bool Bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
-	static bool Close(int sockfd);
-	static bool Setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
-};
-
-class Socket
-{
-public:
-	Socket();
-	~Socket();
-
-	virtual bool Start() = 0;
-
-protected:
-	vector<int> m_sFD;
-
-	int GetFD();
-	bool Wait(time_t tMS, vector<int> &sEventFD); // Millisecond
 };
 
 #endif /* NETWORK_UTIL_H_ */
