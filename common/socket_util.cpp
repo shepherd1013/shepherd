@@ -113,7 +113,7 @@ bool SocketUtil::Close(int sockfd)
 	return true;
 }
 
-bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, vector<int> &sEventFD)
+bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD)
 {
 	struct timeval tv;
 	tv.tv_sec = tMS / 1000;
@@ -139,7 +139,7 @@ bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, vector<int> &sEventFD
 	for (vector<int>::iterator it = sRegisterFD.begin(); it != sRegisterFD.end(); it++) {
 		nRet = FD_ISSET(*it, &readfds);
 		if (nRet == 1) {
-			sEventFD.push_back(*it);
+			*sEventFD = *it;
 			break;
 		}
 	}

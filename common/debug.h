@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#define IS_DEBUG_ENABLED 1
+#define IS_DEBUG_ENABLED 0
 
 #if IS_DEBUG_ENABLED
 #define DEBUG_OUTPUT stderr

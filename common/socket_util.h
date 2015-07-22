@@ -38,7 +38,7 @@ public:
 	static bool Close(int sockfd);
 	static bool SetSockOpt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
 	static bool GetSocketOpt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);
-	static bool Wait(time_t tMS, vector<int> sRegisterFD, vector<int> &sEventFD); // Millisecond
+	static bool Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD); // Millisecond
 	static bool RecvFrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t *addrlen, unsigned int *uRecvDataLen);
 };
 
