@@ -2,3 +2,7 @@
 *.a
 *.o
 *.mk
+makefile
+.cproject
+.project
+Debug
