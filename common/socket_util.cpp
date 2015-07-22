@@ -5,9 +5,12 @@
  *      Author: jacken
  */
 #include "socket_util.h"
+#include "network_util.h"
 #include "debug.h"
 #include <sys/socket.h>
 #include <string.h>
+#include <net/if.h>
+#include <netinet/in.h>
 
 bool SocketUtil::Socket(int domain, int type, int protocol, int *sFD)
 {
@@ -32,6 +35,34 @@ bool SocketUtil::Bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen
 	return true;
 }
 
+bool SocketUtil::BindInterface(int nSocketFD, const char *sInterfaceName)
+{
+	struct ifreq ifr;
+	bool bRet;
+	memset(&ifr, 0, sizeof(ifr));
+	strncpy(ifr.ifr_name, sInterfaceName, sizeof(ifr.ifr_name));
+	bRet = SocketUtil::SetSockOpt(nSocketFD, SOL_SOCKET, SO_BINDTODEVICE, (void *)&ifr, sizeof(ifr));
+	if (bRet == false) {
+		ERR_PRINT("SocketUtil::Setsockopt() error!\n");
+		return false;
+	}
+	return true;
+}
+
+bool SocketUtil::BindPortOnly(int sockfd, unsigned int port)
+{
+	struct sockaddr_in sAddr;
+	sAddr.sin_port = NetworkUtil::HostToNetworkByteOrder((unsigned short)port);
+	sAddr.sin_family = AF_INET;
+	sAddr.sin_addr.s_addr = NetworkUtil::HostToNetworkByteOrder(INADDR_ANY);
+	bool bRet = SocketUtil::Bind(sockfd, (struct sockaddr*)&sAddr, sizeof(sAddr));
+	if (bRet == false) {
+		ERR_PRINT("SocketUtil::Bind() error!\n");
+		return false;
+	}
+	return true;
+}
+
 bool SocketUtil::Connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 {
 	int nRet;
@@ -44,10 +75,22 @@ bool SocketUtil::Connect(int sockfd, const struct sockaddr *addr, socklen_t addr
 	return true;
 }
 
-bool SocketUtil::Setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen)
+bool SocketUtil::SetSockOpt(int sockfd, int level, int optname, const void *optval, socklen_t optlen)
 {
 	int nRet;
 	nRet = setsockopt(sockfd, level, optname, optval, optlen);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s\n", strerror(nRet));
+		return false;
+	}
+	return true;
+}
+
+bool SocketUtil::GetSocketOpt(int sockfd, int level, int optname, void *optval, socklen_t *optlen)
+{
+	int nRet;
+	nRet = getsockopt(sockfd, level, optname, optval, optlen);
 	if (nRet < 0) {
 		nRet = errno;
 		ERR_PRINT("%s\n", strerror(nRet));
@@ -100,6 +143,18 @@ bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, vector<int> &sEventFD
 			break;
 		}
 	}
+	return true;
+}
+
+bool SocketUtil::RecvFrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *RemoteAddr, socklen_t *RemoteAddrLen, unsigned int *uRecvDataLen)
+{
+	int nRet = recvfrom(sockfd, buf, len, 0, (sockaddr*)RemoteAddr, RemoteAddrLen);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s!\n", strerror(nRet));
+		return false;
+	}
+	*uRecvDataLen = nRet;
 	return true;
 }
 

@@ -20,11 +20,26 @@ class SocketUtil
 {
 public:
 	static bool Socket(int domain, int type, int protocol, int *sFD);
+	/*
+	 * domain:
+	 * 	AF_UNIX 	- Local communication
+	 * 	AF_INET		- IPv4 Internet protocols
+	 * 	AF_INET6	- IPv6 Internet protocols
+	 *
+	 * type:
+	 * 	SOCK_STREAM	- Provides sequenced, reliable, two-way, connection-based byte streams. An out-of-band data transmission mechanism may be supported.
+	 * 	SOCK_DGRAM	- Supports datagrams (connectionless, unreliable messages of a fixed maximum length).
+	 * 	SOCK_RAW	- Provides raw network protocol access.
+	 */
 	static bool Bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+	static bool BindInterface(int nSocketFD, const char *sInterfaceName);
+	static bool BindPortOnly(int sockfd, unsigned int port);
 	static bool Connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 	static bool Close(int sockfd);
-	static bool Setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
+	static bool SetSockOpt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
+	static bool GetSocketOpt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);
 	static bool Wait(time_t tMS, vector<int> sRegisterFD, vector<int> &sEventFD); // Millisecond
+	static bool RecvFrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t *addrlen, unsigned int *uRecvDataLen);
 };
 
 class Socket
@@ -33,13 +48,10 @@ public:
 	Socket();
 	~Socket();
 
-	virtual bool Start() = 0;
-
 protected:
 	int m_sFD;
 
 	int GetFD();
-	bool Wait(time_t tMS); // Millisecond
 };
 
 class SocketIPC: public Socket
@@ -48,18 +60,16 @@ public:
 	SocketIPC();
 	~SocketIPC();
 
-	virtual bool Start();
 protected:
 	string sIPCPath;
 };
 
-class SocketIPCServer: public Socket
+class SocketIPCServer: public SocketIPC
 {
 public:
 	SocketIPCServer();
 	~SocketIPCServer();
 
-	virtual bool Start();
 protected:
 	string sIPCPath;
 };
@@ -70,7 +80,6 @@ public:
 	SocketIPCClient();
 	~SocketIPCClient();
 
-	virtual bool Start();
 protected:
 };
 

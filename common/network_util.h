@@ -17,6 +17,8 @@ using namespace std;
 class NetworkUtil
 {
 public:
+	static bool IPv4AddressTextToBinary(const char *sIP, struct in_addr *sAddr);
+	static bool IPv4AddressBinaryToText(struct in_addr sAddr, string &sIP);
 	static bool EnumerateAllInterfaceIPv4(list<string> &lList);
 	static bool EnumerateUpInterfaceIPv4(list<string> &lList);
 	static bool InterfaceIndexToName(int nIfIndex, char *sIfName);
@@ -26,6 +28,7 @@ public:
 	static unsigned short  NetworkToHostByteOrder (unsigned short uHost);
 	static bool EnumerateInterfaceIPv4(list<string> &lList);
 	static bool GetFlagsIPv4(const char* sInterfaceName, short int* nIFFlags);
+
 /*
 	nIFFlags 的各項旗標和說明：
 		IFF_UP              裝置正在運作

@@ -133,3 +133,25 @@ unsigned short NetworkUtil::NetworkToHostByteOrder(unsigned short uHost)
 {
 	return ntohs(uHost);
 }
+
+bool NetworkUtil::IPv4AddressTextToBinary(const char *sIP, struct in_addr *sAddr)
+{
+	int nRet;
+	nRet = inet_aton(sIP, sAddr);
+	if (nRet == 0) {
+		ERR_PRINT("inet_aton() error!\n");
+		return false;
+	}
+	return true;
+}
+
+bool NetworkUtil::IPv4AddressBinaryToText(struct in_addr sAddr, string &sIP)
+{
+	char *pRet = inet_ntoa(sAddr);
+	if (pRet == NULL) {
+		ERR_PRINT("inet_ntoa() error!\n");
+		return false;
+	}
+	sIP = pRet;
+	return true;
+}
