@@ -39,7 +39,17 @@ public:
 	static bool SetSockOpt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
 	static bool GetSocketOpt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);
 	static bool Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD); // Millisecond
-	static bool RecvFrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t *addrlen, unsigned int *uRecvDataLen);
+	static bool RecvFrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *RemoteAddr, socklen_t *RemoteAddrLen, unsigned int *uRecvDataLen);
+	/*
+	 * RecvFrom() Prototype:
+	 * 	ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *src_addr, socklen_t *addrlen);
+	 */
+	static bool SendTo(int sockfd, const void *buf, size_t len, int flags, struct sockaddr *RemoteAddr, socklen_t RemoteAddrLen);
+	/*
+	 * SendTo() Prototype:
+	 * 	ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen);
+	 */
+
 };
 
 class Socket

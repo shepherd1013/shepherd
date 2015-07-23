@@ -11,14 +11,22 @@
 #include <list>
 #include <string>
 #include <vector>
+#include <netinet/in.h>
 
 using namespace std;
 
 class NetworkUtil
 {
 public:
+	static bool IPBinaryToText(int nAddressFamily, const void* stAddr, char* sIP);
+	static bool GetInterfaceIPIPv4Text(const char *sIfName, char* sIP, unsigned int uIPLen);
+	static bool GetInterfaceIPIPv4Binary(const char *sIfName, struct in_addr* pAddr);
+	static bool GetInterfaceNetmaskIPIPv4Binary(const char *sIfName, struct in_addr* pAddr);
+	static bool Broadcast(unsigned int uTargetPort, const void* sSendData, unsigned int uSendDataSize);
+	static bool BroadcastSubnet(const char* sIfName, bool bIsBindInterface, unsigned int uTargetPort, const void* sSendData, unsigned int uSendDataSize);
 	static bool IPv4AddressTextToBinary(const char *sIP, struct in_addr *sAddr);
 	static bool IPv4AddressBinaryToText(struct in_addr sAddr, string &sIP);
+	static bool IPv4AddressBinaryToText(struct in_addr sAddr, char *sIP, unsigned int uIPLen);
 	static bool EnumerateAllInterfaceIPv4(list<string> &lList);
 	static bool EnumerateUpInterfaceIPv4(list<string> &lList);
 	static bool InterfaceIndexToName(int nIfIndex, char *sIfName);
@@ -28,7 +36,6 @@ public:
 	static unsigned short  NetworkToHostByteOrder (unsigned short uHost);
 	static bool EnumerateInterfaceIPv4(list<string> &lList);
 	static bool GetFlagsIPv4(const char* sInterfaceName, short int* nIFFlags);
-
 /*
 	nIFFlags 的各項旗標和說明：
 		IFF_UP              裝置正在運作

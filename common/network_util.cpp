@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <arpa/inet.h>
+#include "socket_util.h"
 
 bool NetworkUtil::EnumerateUpInterfaceIPv4(list<string> &lList)
 {
@@ -155,3 +156,242 @@ bool NetworkUtil::IPv4AddressBinaryToText(struct in_addr sAddr, string &sIP)
 	sIP = pRet;
 	return true;
 }
+
+bool NetworkUtil::IPv4AddressBinaryToText(struct in_addr sAddr, char *sIP, unsigned int uIPLen)
+{
+	char *pRet = inet_ntoa(sAddr);
+	if (pRet == NULL) {
+		ERR_PRINT("inet_ntoa() error!\n");
+		return false;
+	}
+	strncpy(sIP, pRet, uIPLen);
+	return true;
+}
+
+bool NetworkUtil::Broadcast(unsigned int uTargetPort, const void* sSendData, unsigned int uSendDataSize)
+{
+	bool bRet;
+	int nSocketFD;
+
+	bRet = SocketUtil::Socket(AF_INET, SOCK_DGRAM, 0, &nSocketFD);
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::Socket() error!\n");
+		return false;
+	}
+
+	int bIsBcastEnable = 1;
+	bRet = SocketUtil::SetSockOpt(nSocketFD, SOL_SOCKET, SO_BROADCAST, &bIsBcastEnable, sizeof(bIsBcastEnable));
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::SetSockOpt() error!\n");
+		return false;
+	}
+
+	string sIP;
+	struct in_addr uBcastIP;
+	uBcastIP.s_addr = INADDR_BROADCAST;
+
+	bRet = NetworkUtil::IPv4AddressBinaryToText(uBcastIP, sIP);
+	if (bRet  == false) {
+		ERR_PRINT("NetworkUtil::IPv4AddressBinaryToText() error!\n");
+		return false;
+	}
+	DBG_PRINT("Bcast IP:%s\n", sIP.c_str());
+
+	struct sockaddr_in stRemoteAddr;
+	stRemoteAddr.sin_port = HostToNetworkByteOrder((unsigned short)uTargetPort);
+	stRemoteAddr.sin_family = AF_INET;
+	stRemoteAddr.sin_addr.s_addr = uBcastIP.s_addr;
+
+	bRet = SocketUtil::SendTo(nSocketFD, sSendData, uSendDataSize, 0, (sockaddr*)&stRemoteAddr, sizeof(stRemoteAddr));
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::SendTo() error!\n");
+		return false;
+	}
+
+	return true;
+}
+
+bool NetworkUtil::BroadcastSubnet(const char* sIfName, bool bIsBindInterface, unsigned int uTargetPort, const void* sSendData, unsigned int uSendDataSize)
+{
+	bool bRet;
+	int nSocketFD;
+
+	bRet = SocketUtil::Socket(AF_INET, SOCK_DGRAM, 0, &nSocketFD);
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::Socket() error!\n");
+		return false;
+	}
+
+	int bIsBcastEnable = 1;
+	bRet = SocketUtil::SetSockOpt(nSocketFD, SOL_SOCKET, SO_BROADCAST, &bIsBcastEnable, sizeof(bIsBcastEnable));
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::SetSockOpt() error!\n");
+		return false;
+	}
+
+	if (bIsBindInterface) {
+		bRet = SocketUtil::BindInterface(nSocketFD, sIfName);
+		if (bRet  == false) {
+			ERR_PRINT("SocketUtil::BindInterface() error!\n");
+			return false;
+		}
+	}
+
+	struct in_addr uLocalIP;
+	bRet = NetworkUtil::GetInterfaceIPIPv4Binary(sIfName, &uLocalIP);
+	if (bRet  == false) {
+		ERR_PRINT("NetworkUtil::GetInterfaceIPIPv4Binary() error!\n");
+		return false;
+	}
+
+	string sIP;
+	bRet = NetworkUtil::IPv4AddressBinaryToText(uLocalIP, sIP);
+	if (bRet  == false) {
+		ERR_PRINT("NetworkUtil::IPv4AddressBinaryToText() error!\n");
+		return false;
+	}
+	DBG_PRINT("Local IP:%s\n", sIP.c_str());
+
+	struct in_addr uLocalNetmaskIP;
+	bRet = NetworkUtil::GetInterfaceNetmaskIPIPv4Binary(sIfName, &uLocalNetmaskIP);
+	if (bRet  == false) {
+		ERR_PRINT("NetworkUtil::GetInterfaceNetmaskIPIPv4Binary() error!\n");
+		return false;
+	}
+
+	struct in_addr uBcastIP;
+	uBcastIP.s_addr = uLocalIP.s_addr | (~(uLocalNetmaskIP.s_addr));
+
+	bRet = NetworkUtil::IPv4AddressBinaryToText(uBcastIP, sIP);
+	if (bRet  == false) {
+		ERR_PRINT("NetworkUtil::IPv4AddressBinaryToText() error!\n");
+		return false;
+	}
+	DBG_PRINT("Bcast IP:%s\n", sIP.c_str());
+
+	struct sockaddr_in stRemoteAddr;
+	stRemoteAddr.sin_port = HostToNetworkByteOrder((unsigned short)uTargetPort);
+	stRemoteAddr.sin_family = AF_INET;
+	stRemoteAddr.sin_addr.s_addr = uBcastIP.s_addr;
+
+	bRet = SocketUtil::SendTo(nSocketFD, sSendData, uSendDataSize, 0, (sockaddr*)&stRemoteAddr, sizeof(stRemoteAddr));
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::SendTo() error!\n");
+		return false;
+	}
+
+	return true;
+}
+
+bool NetworkUtil::GetInterfaceIPIPv4Text(const char *sIfName, char* sIP, unsigned int uIPLen)
+{
+	struct in_addr stAddr;
+	bool bRet = NetworkUtil::GetInterfaceIPIPv4Binary(sIfName, &stAddr);
+	if (bRet  == false) {
+		ERR_PRINT("NetworkUtil::GetInterfaceIPIPv4Binary() error!\n");
+		return false;
+	}
+
+	bRet = NetworkUtil::IPv4AddressBinaryToText(stAddr, sIP, uIPLen);
+	if (bRet  == false) {
+		ERR_PRINT("NetworkUtil::IPv4AddressBinaryToText() error!\n");
+		return false;
+	}
+	return true;
+}
+
+bool NetworkUtil::GetInterfaceIPIPv4Binary(const char *sIfName, struct in_addr* pAddr)
+{
+	struct ifreq ifr;
+	int sockfd;
+	int nRet;
+	bool bRet;
+
+	bRet = SocketUtil::Socket(AF_INET, SOCK_DGRAM, 0, &sockfd);
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::Socket() error!\n");
+		return false;
+	}
+
+	bzero(&ifr, sizeof(ifr));
+	strncpy(ifr.ifr_name, sIfName, sizeof(ifr.ifr_name));
+
+	nRet = ioctl(sockfd, SIOCGIFADDR, &ifr);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s\n",strerror(nRet));
+		return false;
+	}
+
+	bRet = SocketUtil::Close(sockfd);
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::Close() error!\n");
+		return false;
+	}
+
+	memcpy(pAddr, &(((struct sockaddr_in*)&ifr.ifr_addr)->sin_addr), sizeof(struct in_addr));
+//	*pAddr = ((struct sockaddr_in*)&ifr.ifr_addr)->sin_addr;
+
+	return true;
+}
+
+bool NetworkUtil::GetInterfaceNetmaskIPIPv4Binary(const char *sIfName, struct in_addr* pAddr)
+{
+	struct ifreq ifr;
+	int sockfd;
+	int nRet;
+	bool bRet;
+
+	bRet = SocketUtil::Socket(AF_INET, SOCK_DGRAM, 0, &sockfd);
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::Socket() error!\n");
+		return false;
+	}
+
+	bzero(&ifr, sizeof(ifr));
+	strncpy(ifr.ifr_name, sIfName, sizeof(ifr.ifr_name));
+
+	nRet = ioctl(sockfd, SIOCGIFNETMASK, &ifr);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s\n",strerror(nRet));
+		return false;
+	}
+
+	bRet = SocketUtil::Close(sockfd);
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::Close() error!\n");
+		return false;
+	}
+
+	memcpy(pAddr, &(((struct sockaddr_in*)&ifr.ifr_addr)->sin_addr), sizeof(struct in_addr));
+//	*pAddr = ((struct sockaddr_in*)&ifr.ifr_addr)->sin_addr.s_addr;
+
+	return true;
+}
+
+bool NetworkUtil::IPBinaryToText(int nAddressFamily, const void* stAddr, char* sIP)
+{
+	const char *pRet;
+	int nRet;
+
+	switch (nAddressFamily) {
+	case AF_INET:
+		pRet = inet_ntop(nAddressFamily, stAddr, sIP, INET_ADDRSTRLEN);
+		break;
+	case AF_INET6:
+		pRet = inet_ntop(nAddressFamily, stAddr, sIP, INET6_ADDRSTRLEN);
+		break;
+	default:
+		ERR_PRINT("Unknown address family (%d)!", nAddressFamily);
+		return false;
+	}
+
+	if (pRet == NULL) {
+		nRet = errno;
+		ERR_PRINT("%s\n",strerror(nRet));
+		return false;
+	}
+	return true;
+}
+

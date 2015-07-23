@@ -148,13 +148,30 @@ bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD)
 
 bool SocketUtil::RecvFrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *RemoteAddr, socklen_t *RemoteAddrLen, unsigned int *uRecvDataLen)
 {
-	int nRet = recvfrom(sockfd, buf, len, 0, (sockaddr*)RemoteAddr, RemoteAddrLen);
+	int nRet = recvfrom(sockfd, buf, len, 0, RemoteAddr, RemoteAddrLen);
 	if (nRet < 0) {
 		nRet = errno;
 		ERR_PRINT("%s!\n", strerror(nRet));
 		return false;
 	}
 	*uRecvDataLen = nRet;
+	return true;
+}
+
+bool SocketUtil::SendTo(int sockfd, const void *buf, size_t len, int flags, struct sockaddr *RemoteAddr, socklen_t RemoteAddrLen)
+{
+	int nRet = sendto(sockfd, buf, len, 0, RemoteAddr, RemoteAddrLen);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s!\n", strerror(nRet));
+		return false;
+	}
+
+	if (len != (unsigned int)nRet) {
+		ERR_PRINT("Data size (%u) isn't equal to sent size (%d)!\n", len, nRet);
+		return false;
+	}
+
 	return true;
 }
 
