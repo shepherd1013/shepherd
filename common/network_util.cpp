@@ -168,6 +168,48 @@ bool NetworkUtil::IPv4AddressBinaryToText(struct in_addr sAddr, char *sIP, unsig
 	return true;
 }
 
+bool NetworkUtil::Multicast(const char* sLocalIP, const char* sMcastAddr, unsigned int uTargetPort, const void* sSendData, unsigned int uSendDataSize)
+{
+	bool bRet;
+	int nSocketFD;
+
+	bRet = SocketUtil::Socket(AF_INET, SOCK_DGRAM, 0, &nSocketFD);
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::Socket() error!\n");
+		return false;
+	}
+
+	struct in_addr stLocalIP;
+	bRet = NetworkUtil::IPv4AddressTextToBinary(sLocalIP, &stLocalIP);
+	if (bRet  == false) {
+		ERR_PRINT("NetworkUtil::IPv4AddressTextToBinary() error!\n");
+		return false;
+	}
+
+	bRet = SocketUtil::SetSockOpt(nSocketFD, IPPROTO_IP, IP_MULTICAST_IF, &stLocalIP, sizeof(stLocalIP));
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::SetSockOpt() error!\n");
+		return false;
+	}
+
+	struct sockaddr_in stRemoteAddr;
+	stRemoteAddr.sin_port = HostToNetworkByteOrder((unsigned short)uTargetPort);
+	stRemoteAddr.sin_family = AF_INET;
+	bRet = NetworkUtil::IPv4AddressTextToBinary(sMcastAddr, &(stRemoteAddr.sin_addr));
+	if (bRet == false) {
+		ERR_PRINT("NetworkUtil::IPv4AddressTextToBinary() error!\n");
+		return false;
+	}
+
+	bRet = SocketUtil::SendTo(nSocketFD, sSendData, uSendDataSize, 0, (sockaddr*)&stRemoteAddr, sizeof(stRemoteAddr));
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::SendTo() error!\n");
+		return false;
+	}
+
+	return true;
+}
+
 bool NetworkUtil::Broadcast(unsigned int uTargetPort, const void* sSendData, unsigned int uSendDataSize)
 {
 	bool bRet;
