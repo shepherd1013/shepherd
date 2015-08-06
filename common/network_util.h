@@ -18,6 +18,7 @@ using namespace std;
 class NetworkUtil
 {
 public:
+	static bool GetInterfaceMAC(const char* sIfName, unsigned char* sMAC, unsigned int* uMACLen);
 	static bool Multicast(const char* sLocalIP, const char* sTargetAddr, unsigned int uTargetPort, const void* sSendData, unsigned int uSendDataSize);
 	static bool IPBinaryToText(int nAddressFamily, const void* stAddr, char* sIP);
 	static bool GetInterfaceIPIPv4Text(const char *sIfName, char* sIP, unsigned int uIPLen);

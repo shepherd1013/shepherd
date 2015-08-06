@@ -14,6 +14,26 @@
 #include <sys/un.h>
 #include <stddef.h>
 
+#if 1
+bool TestSocketIPCServer(const char* sIPCPath)
+{
+	SocketIPCServer server(sIPCPath);
+
+	bool bRet;
+	do {
+		bRet = server.Wait(33);
+		if (bRet) {
+			bRet = server.Recv();
+			if (bRet == false) {
+				ERR_PRINT("server.Recv() error!\n");
+				return false;
+			}
+		}
+	} while(true);
+
+	return true;
+}
+#else
 bool TestSocketIPCServer(const char* sIPCPath)
 {
 	int nSocketFD;
@@ -46,10 +66,7 @@ bool TestSocketIPCServer(const char* sIPCPath)
 	}
 
 	char sRecvData[1024] = {0};
-	struct sockaddr_un sRemote;
-	socklen_t RemoteLength;
 	do {
-//		nRet = recvfrom(nSocketFD, sRecvData, sizeof(sRecvData), 0, (struct sockaddr*)&sRemote, &RemoteLength);
 		nRet = recv(nSocketFD, sRecvData, sizeof(sRecvData), 0);
 		if(nRet < 0){
 			nRet = errno;
@@ -73,6 +90,7 @@ bool TestSocketIPCServer(const char* sIPCPath)
 	}
 	return true;
 }
+#endif
 
 int main(int argc, char *argv[])
 {

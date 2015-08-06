@@ -71,25 +71,29 @@ public:
 	~SocketIPC();
 
 protected:
-	string sIPCPath;
 };
 
 class SocketIPCServer: public SocketIPC
 {
 public:
-	SocketIPCServer();
+	SocketIPCServer(const char *sLocalPath);
 	~SocketIPCServer();
 
+	bool Wait(time_t tMS);
+	bool Recv();
+
 protected:
-	string sIPCPath;
+	char	m_buffer[2048];
+
 };
 
 class SocketIPCClient: public SocketIPC
 {
 public:
-	SocketIPCClient();
+	SocketIPCClient(const char *sRemotePath);
 	~SocketIPCClient();
 
+	bool Send(const char *SendData, unsigned int uDataSize);
 protected:
 };
 

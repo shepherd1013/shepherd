@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <arpa/inet.h>
+#include <net/if_arp.h>
 #include "socket_util.h"
 
 bool NetworkUtil::EnumerateUpInterfaceIPv4(list<string> &lList)
@@ -437,3 +438,41 @@ bool NetworkUtil::IPBinaryToText(int nAddressFamily, const void* stAddr, char* s
 	return true;
 }
 
+bool NetworkUtil::GetInterfaceMAC(const char* sIfName, unsigned char* sMAC, unsigned int* uMACLen)
+{
+	struct ifreq ifr;
+	int sockfd;
+	int nRet;
+	bool bRet;
+
+	bRet = SocketUtil::Socket(AF_INET, SOCK_DGRAM, 0, &sockfd);
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::Socket() error!\n");
+		return false;
+	}
+
+	bzero(&ifr, sizeof(ifr));
+	strncpy(ifr.ifr_name, sIfName, sizeof(ifr.ifr_name));
+
+	nRet = ioctl(sockfd, SIOCGIFHWADDR, &ifr);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s\n",strerror(nRet));
+		return false;
+	}
+
+	bRet = SocketUtil::Close(sockfd);
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::Close() error!\n");
+		return false;
+	}
+
+	if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
+		ERR_PRINT("Invalid family (%d)!\n", ifr.ifr_hwaddr.sa_family);
+		return false;
+	}
+
+	memcpy(sMAC, &(ifr.ifr_hwaddr.sa_data), MAX_ADDR_LEN - 1);
+	*uMACLen = MAX_ADDR_LEN - 1;
+	return true;
+}

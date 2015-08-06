@@ -14,6 +14,21 @@
 #include <sys/un.h>
 #include <stddef.h>
 
+#if 1
+bool TestSocketIPCClient(const char* sIPCPath)
+{
+	SocketIPCClient client(sIPCPath);
+	char sSendData[1024] = {0};
+	strncpy(sSendData, "123456789", sizeof(sSendData));
+
+	bool bRet = client.Send(sSendData, strlen(sSendData));
+	if (bRet == false) {
+		ERR_PRINT("cleint.Send() error!\n");
+		return false;
+	}
+	return true;
+}
+#else
 bool TestSocketIPCClient(const char* sIPCPath)
 {
 	int nSocketFD;
@@ -55,6 +70,7 @@ bool TestSocketIPCClient(const char* sIPCPath)
 	}
 	return true;
 }
+#endif
 
 int main(int argc, char *argv[])
 {

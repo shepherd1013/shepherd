@@ -11,6 +11,8 @@
 #include <string.h>
 #include <net/if.h>
 #include <netinet/in.h>
+#include <sys/un.h>
+#include <stddef.h>
 
 bool SocketUtil::Socket(int domain, int type, int protocol, int *sFD)
 {
@@ -181,6 +183,12 @@ Socket::Socket()
 
 Socket::~Socket()
 {
+	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+	bool bRet = SocketUtil::Close(m_sFD);
+	if (bRet == false) {
+		ERR_PRINT("SocketUtil::Close() error!\n");
+		return;
+	}
 }
 
 int Socket::GetFD()
@@ -188,4 +196,107 @@ int Socket::GetFD()
 	return m_sFD;
 }
 
+SocketIPC::SocketIPC()
+{
+}
 
+SocketIPC::~SocketIPC()
+{
+}
+
+SocketIPCServer::SocketIPCServer(const char* sLocalPath)
+{
+	bool bRet;
+
+	bRet = SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &m_sFD);
+	if (bRet == false) {
+		ERR_PRINT("SocketUtil::Socket() error!\n");
+		return;
+	}
+
+	int nRet = unlink(sLocalPath);
+	if ( (nRet < 0) && (errno != ENOENT) ) {
+		nRet = errno;
+		ERR_PRINT("nRet: %d\n", nRet);
+		ERR_PRINT("%s\n", strerror(nRet));
+		return;
+	}
+
+	int size;
+	struct sockaddr_un un;
+	memset(&un, 0, sizeof(un));
+	strncpy(un.sun_path, sLocalPath, sizeof(un.sun_path));
+	un.sun_family = AF_UNIX;
+	size = offsetof(struct sockaddr_un, sun_path) + strlen(un.sun_path);
+	bRet = SocketUtil::Bind(m_sFD, (struct sockaddr *)&un, size);
+	if (bRet == false) {
+		ERR_PRINT("SocketUtil::Bind() error!\n");
+		return;
+	}
+}
+
+SocketIPCServer::~SocketIPCServer()
+{
+}
+
+bool SocketIPCServer::Wait(time_t tMS)
+{
+	vector<int> sRegisterFD;
+	int sEventFD;
+	sRegisterFD.push_back(m_sFD);
+	bool bRet = SocketUtil::Wait(tMS, sRegisterFD, &sEventFD);
+	if (bRet == false) {
+		return false;
+	}
+	return true;
+}
+
+bool SocketIPCServer::Recv()
+{
+	int nRet;
+	nRet = recv(m_sFD, m_buffer, sizeof(m_buffer), 0);
+	if(nRet < 0){
+		nRet = errno;
+		ERR_PRINT("%s\n", strerror(nRet));
+		return false;
+	}
+	DBG_PRINT("Recv data: %s\n", m_buffer);
+	return true;
+}
+
+SocketIPCClient::SocketIPCClient(const char* sRemotePath)
+{
+	bool bRet;
+	bRet = SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &m_sFD);
+	if (bRet == false) {
+		ERR_PRINT("SocketUtil::Socket() error!\n");
+		return;
+	}
+
+	struct sockaddr_un sRemote;
+	socklen_t RemoteLength = sizeof(sRemote);
+	memset(&sRemote, 0, sizeof(sRemote));
+	sRemote.sun_family = AF_UNIX;
+	strncpy(sRemote.sun_path, sRemotePath, sizeof(sRemote.sun_path));
+	bRet = SocketUtil::Connect(m_sFD, (struct sockaddr *)&sRemote, RemoteLength);
+	if (bRet == false) {
+		ERR_PRINT("SocketUtil::Connect() error!\n");
+		return;
+	}
+}
+
+SocketIPCClient::~SocketIPCClient()
+{
+}
+
+bool SocketIPCClient::Send(const char *SendData, unsigned int uDataSize)
+{
+	int nRet = send(m_sFD, SendData, uDataSize, 0);
+	if(nRet < 0){
+		nRet = errno;
+		ERR_PRINT("%s\n", strerror(nRet));
+		return false;
+	}
+	DBG_PRINT("Send data size: %d\n", nRet);
+	return true;
+}
