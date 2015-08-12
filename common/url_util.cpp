@@ -13,10 +13,17 @@
 
 bool URLUtil::Encode(const char *sURL, char *sEncodedURL, unsigned int *pEncodedURLLen)
 {
-	unsigned int uURLLen = strlen(sURL);
+	unsigned int uURLLen;
 	char sEncodedResult[4] = {0};
 
-	if (uURLLen <= 0) {
+	if (sURL == NULL) {
+		ERR_PRINT("No URL input!");
+		return false;
+	}
+
+	uURLLen = strlen(sURL);
+	if (uURLLen == 0) {
+		ERR_PRINT("The URL is empty!");
 		sEncodedURL[0] = 0;
 		*pEncodedURLLen = 0;
 		return false;
@@ -60,12 +67,18 @@ bool URLUtil::Encode(const char *sURL, char *sEncodedURL, unsigned int *pEncoded
 
 bool URLUtil::Decode(const char *sEncodedURL, char *sURL, unsigned int *pURLLen)
 {
-	unsigned int uEncodedURLLen = strlen(sEncodedURL);
+	unsigned int uEncodedURLLen;
 	char sEncodedStr[3] = {0};
 	long int lDecodedResult = 0;
 	int nRet;
 
-	if (uEncodedURLLen <= 0) {
+	if (sURL == NULL) {
+		ERR_PRINT("No encoded URL input!");
+		return false;
+	}
+
+	uEncodedURLLen = strlen(sEncodedURL);
+	if (uEncodedURLLen == 0) {
 		sURL[0] = 0;
 		*pURLLen = 0;
 		return false;
@@ -87,9 +100,11 @@ bool URLUtil::Decode(const char *sEncodedURL, char *sURL, unsigned int *pURLLen)
 			sURL[uURLIndex] = (char)lDecodedResult;
 			uEncodedURLIdx = uEncodedURLIdx + 3;
 			continue;
+		} else if (sEncodedURL[uEncodedURLIdx] == '+') {
+			sURL[uURLIndex] = ' '; //Replace a plus sign with a space.
+		} else {
+			sURL[uURLIndex] = sEncodedURL[uEncodedURLIdx];
 		}
-
-		sURL[uURLIndex] = sEncodedURL[uEncodedURLIdx];
 		uEncodedURLIdx++;
 	}
 	DBG_PRINT("sURL:%s\n", sURL);
