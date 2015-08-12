@@ -9,7 +9,7 @@
 #include <string.h>
 #include "debug.h"
 
-bool File::Open(FILE *fp, const char *sFilename, const char *sMode)
+FILE* File::Open(const char *sFilename, const char *sMode)
 {
 	int nRet;
 	FILE *pFile;
@@ -18,10 +18,9 @@ bool File::Open(FILE *fp, const char *sFilename, const char *sMode)
 	if(pFile == NULL) {
 		nRet = errno;
 		ERR_PRINT("%s\n", strerror(nRet));
-		return false;
+		return NULL;
 	}
-	fp = pFile;
-	return true;
+	return pFile;
 }
 
 bool File::Close(FILE *fp)
@@ -37,4 +36,13 @@ bool File::Close(FILE *fp)
 	return true;
 }
 
-
+bool File::Write(const void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile)
+{
+	size_t nRet = fwrite(pData, uDataSize, uNumElement, pFile);
+	DBG_PRINT("nRet: %u\n", nRet);
+	if ( (nRet == 0) || (nRet != (uDataSize * uNumElement)) ) {
+		ERR_PRINT("fwrite() error!\n");
+		return false;
+	}
+	return true;
+}

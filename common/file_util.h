@@ -12,8 +12,9 @@
 class File
 {
 public:
-	static bool	Open(FILE *fp, const char *filename, const char *sMode);
+	static FILE*	Open(const char *filename, const char *sMode);
 	static bool	Close(FILE *fp);
+	static bool	Write(const void *ptr, size_t size, size_t nmemb, FILE *stream);
 };
 
 
