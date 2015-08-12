@@ -43,6 +43,32 @@ bool NetworkUtil::EnumerateUpInterfaceIPv4(list<string> &lList)
 	return true;
 }
 
+bool NetworkUtil::EnumerateRunningInterfaceIPv4(list<string> &lList)
+{
+	list<string> lAllIf;
+	bool bRet;
+	short int nIFFlags;
+
+	bRet = NetworkUtil::EnumerateAllInterfaceIPv4(lAllIf);
+	if (bRet == false) {
+		ERR_PRINT("EnumerateAllInterfaceIPv4() error!\n");
+		return bRet;
+	}
+
+	for (list<string>::iterator it = lAllIf.begin(); it != lAllIf.end(); it++) {
+		bRet = NetworkUtil::GetFlagsIPv4(it->c_str(), &nIFFlags);
+		if (bRet == false) {
+			continue;
+		}
+
+		if (nIFFlags & IFF_RUNNING) {
+			lList.push_back(*it);
+		}
+	}
+
+	return true;
+}
+
 bool NetworkUtil::EnumerateAllInterfaceIPv4(list<string> &lList)
 {
 	DIR *dFD;
@@ -474,5 +500,28 @@ bool NetworkUtil::GetInterfaceMAC(const char* sIfName, unsigned char* sMAC, unsi
 
 	memcpy(sMAC, &(ifr.ifr_hwaddr.sa_data), MAX_ADDR_LEN - 1);
 	*uMACLen = MAX_ADDR_LEN - 1;
+	return true;
+}
+
+bool NetworkUtil::IsBridgeEnabled(bool *bIsEnabled, string &sBridgeIfName)
+{
+	bool bRet;
+	list<string> lList;
+	bRet = NetworkUtil::EnumerateAllInterfaceIPv4(lList);
+	if (bRet == false) {
+		ERR_PRINT("NetworkUtil::EnumerateAllInterfaceIPv4() error!\n");
+		return false;
+	}
+
+	*bIsEnabled = false;
+
+	for (list<string>::iterator it = lList.begin(); it != lList.end(); it++) {
+		DBG_PRINT("if name: %s\n", it->c_str());
+		if (it->find("br") != string::npos) {
+			*bIsEnabled = true;
+			sBridgeIfName = *it;
+			break;
+		}
+	}
 	return true;
 }

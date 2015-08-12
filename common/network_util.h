@@ -57,6 +57,8 @@ public:
 		IFF_AUTOMEDIA       自動選擇 media
 		IFF_DYNAMIC         裝置介面關閉時丟棄地址
 */
+	static bool IsBridgeEnabled(bool *bIsEnabled, string &sBridgeIfName);
+	static bool EnumerateRunningInterfaceIPv4(list<string> &lList);
 };
 
 #endif /* NETWORK_UTIL_H_ */
