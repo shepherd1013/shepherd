@@ -277,6 +277,11 @@ bool NetworkUtil::Broadcast(unsigned int uTargetPort, const void* sSendData, uns
 		return false;
 	}
 
+	bRet = SocketUtil::Close(nSocketFD);
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::Close() error!\n");
+		return false;
+	}
 	return true;
 }
 
@@ -349,6 +354,11 @@ bool NetworkUtil::BroadcastSubnet(const char* sIfName, bool bIsBindInterface, un
 		return false;
 	}
 
+	bRet = SocketUtil::Close(nSocketFD);
+	if (bRet  == false) {
+		ERR_PRINT("SocketUtil::Close() error!\n");
+		return false;
+	}
 	return true;
 }
 
