@@ -6,3 +6,4 @@ makefile
 .cproject
 .project
 Debug
+.settings
