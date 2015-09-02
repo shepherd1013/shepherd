@@ -115,6 +115,39 @@ bool SocketUtil::Close(int sockfd)
 	return true;
 }
 
+bool SocketUtil::Wait(time_t tMS, list<int> sRegisterFD, int* sEventFD)
+{
+	struct timeval tv;
+	tv.tv_sec = tMS / 1000;
+	tv.tv_usec = (tMS % 1000) * 1000;
+
+	fd_set readfds;
+	FD_ZERO(&readfds);
+	for (list<int>::iterator it = sRegisterFD.begin(); it != sRegisterFD.end(); it++) {
+		FD_SET(*it, &readfds);
+	}
+
+	int nRet = select(sRegisterFD.back() + 1, &readfds, NULL, NULL, &tv);
+	if (nRet == 0) { // Timeout
+		return false ;
+	}
+
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s!\n", strerror(nRet));
+		return false;
+	}
+
+	for (list<int>::iterator it = sRegisterFD.begin(); it != sRegisterFD.end(); it++) {
+		nRet = FD_ISSET(*it, &readfds);
+		if (nRet == 1) {
+			*sEventFD = *it;
+			break;
+		}
+	}
+	return true;
+}
+
 bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD)
 {
 	struct timeval tv;
@@ -170,7 +203,7 @@ bool SocketUtil::SendTo(int sockfd, const void *buf, size_t len, int flags, stru
 	}
 
 	if (len != (unsigned int)nRet) {
-		ERR_PRINT("Data size (%lu) isn't equal to sent size (%d)!\n", len, nRet);
+		ERR_PRINT("Data size (%u) isn't equal to sent size (%d)!\n", len, nRet);
 		return false;
 	}
 

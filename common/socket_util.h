@@ -13,6 +13,7 @@
 #include <string>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <list>
 
 using namespace std;
 
@@ -39,6 +40,7 @@ public:
 	static bool SetSockOpt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
 	static bool GetSocketOpt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);
 	static bool Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD); // Millisecond
+	static bool Wait(time_t tMS, list<int> sRegisterFD, int* sEventFD); // Millisecond
 	static bool RecvFrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *RemoteAddr, socklen_t *RemoteAddrLen, unsigned int *uRecvDataLen);
 	/*
 	 * RecvFrom() Prototype:
