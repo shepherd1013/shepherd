@@ -150,6 +150,10 @@ bool SocketUtil::Wait(time_t tMS, list<int> sRegisterFD, int* sEventFD)
 
 bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD)
 {
+	if (sRegisterFD.empty()) {
+		ERR_PRINT("Resgister socket FD is empty!\n");
+		return false;
+	}
 	struct timeval tv;
 	tv.tv_sec = tMS / 1000;
 	tv.tv_usec = (tMS % 1000) * 1000;
@@ -157,6 +161,10 @@ bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD)
 	fd_set readfds;
 	FD_ZERO(&readfds);
 	for (vector<int>::iterator it = sRegisterFD.begin(); it != sRegisterFD.end(); it++) {
+		if(*it < 0){
+			ERR_PRINT("Invalid socket FD (%d)!\n", *it);
+			continue;
+		}
 		FD_SET(*it, &readfds);
 	}
 
@@ -207,6 +215,18 @@ bool SocketUtil::SendTo(int sockfd, const void *buf, size_t len, int flags, stru
 		return false;
 	}
 
+	return true;
+}
+
+bool SocketUtil::DuplicateFD(int nOldFD, int *nNewFD)
+{
+	int nRet = dup(nOldFD);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s!\n", strerror(nRet));
+		return false;
+	}
+	*nNewFD = nRet;
 	return true;
 }
 

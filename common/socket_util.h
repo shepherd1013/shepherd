@@ -51,7 +51,7 @@ public:
 	 * SendTo() Prototype:
 	 * 	ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen);
 	 */
-
+	static bool DuplicateFD(int nOldFD, int *nNewFD);
 };
 
 class Socket
@@ -86,7 +86,6 @@ public:
 
 protected:
 	char	m_buffer[2048];
-
 };
 
 class SocketIPCClient: public SocketIPC
