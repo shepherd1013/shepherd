@@ -117,6 +117,11 @@ bool SocketUtil::Close(int sockfd)
 
 bool SocketUtil::Wait(time_t tMS, list<int> sRegisterFD, int* sEventFD)
 {
+	if (sRegisterFD.empty()) {
+//		ERR_PRINT("Resgister socket FD is empty!\n");
+		return false;
+	}
+
 	struct timeval tv;
 	tv.tv_sec = tMS / 1000;
 	tv.tv_usec = (tMS % 1000) * 1000;
@@ -124,6 +129,10 @@ bool SocketUtil::Wait(time_t tMS, list<int> sRegisterFD, int* sEventFD)
 	fd_set readfds;
 	FD_ZERO(&readfds);
 	for (list<int>::iterator it = sRegisterFD.begin(); it != sRegisterFD.end(); it++) {
+		if (*it < 0) {
+			ERR_PRINT("Invalid socket FD (%d)!\n", *it);
+			continue;
+		}
 		FD_SET(*it, &readfds);
 	}
 
@@ -154,6 +163,7 @@ bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD)
 		ERR_PRINT("Resgister socket FD is empty!\n");
 		return false;
 	}
+
 	struct timeval tv;
 	tv.tv_sec = tMS / 1000;
 	tv.tv_usec = (tMS % 1000) * 1000;
@@ -161,7 +171,7 @@ bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD)
 	fd_set readfds;
 	FD_ZERO(&readfds);
 	for (vector<int>::iterator it = sRegisterFD.begin(); it != sRegisterFD.end(); it++) {
-		if(*it < 0){
+		if (*it < 0) {
 			ERR_PRINT("Invalid socket FD (%d)!\n", *it);
 			continue;
 		}
