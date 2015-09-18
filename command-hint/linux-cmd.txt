@@ -1,0 +1,45 @@
+#Mount NFS
+mount -onolock 10.0.0.2:/mnt/nfs /mnt/nfs
+mount -onolock 10.0.0.100:/mnt/nfs /mnt/nfs
+mount -onolock 192.168.99.100:/mnt/nfs /mnt/nfs
+
+
+#tftp
+tftp -g -r GeoHost 192.168.99.100 && tftp -g -r GeoHost.ini 192.168.99.100
+tftp -g -r GeoHost 192.168.4.118 && tftp -g -r GeoHost.ini 192.168.4.118
+tftp -g -r GeoDevice 192.168.99.100 && tftp -g -r GeoDevice.ini 192.168.99.100
+tftp -g -r GeoDevice 192.168.4.118 && tftp -g -r GeoDevice.ini 192.168.4.118
+tftp -g -r GeoDevice 192.168.5.42 && tftp -g -r GeoDevice.ini 192.168.5.42
+tftp -g -r GeoDevice-unicast 192.168.5.42 && tftp -g -r GeoDevice.ini 192.168.5.42
+tftp -g -r OnvifHost 192.168.99.100 && tftp -g -r OnvifHost.ini 192.168.99.100
+tftp -g -r NetworkManager 192.168.99.100
+tftp -g -r unittest.sh 192.168.99.100
+tftp -g -r GV-SNVR-GUI 192.168.99.100
+tftp -g -r Unittest.sh 192.168.99.100
+
+#udhcpc
+/sbin/udhcpc -f -i br0 -t 3 -T 1 -A 10 -s /etc/network/udhcpc/br0.sh -p /var/run/dhcpc-br0.pid
+
+#Entropic tool chain
+arm-cortex-linux-gnueabi-
+/root/geo/git/snvr4poe/toolchain/gcc-4.5.2_glibc/bin
+
+#Hisiv200 tool chain
+arm-hisiv200-linux-
+/opt/hisi-linux/x86-arm/arm-hisiv200-linux/target/bin
+
+#iperf
+/nvr/iperf -s
+/nvr/iperf -c 10.0.0.198 -t 30 -i 5 -w 8M
+/nvr/iperf -c 192.168.31.190 -t 30 -i 5 -w 8M
+
+./configure --host=arm-hisiv200-linux --with-ssl
+
+mount logo.bin /tmp/1 -o loop
+dd if=/dev/zero of=logo.img bs=1k count=2k
+
+Usage: ./readini.sh [Ini File] [Key]
+Ex: ./readini.sh "/nvr/user/lan.ini" "Address"
+
+
+date && pmap `ps aux |grep onvif|cut -d " " -f 6`

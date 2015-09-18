@@ -1,0 +1,46 @@
+#GeoHost IPC test command
+/nvr/ipc "/tmp/SI_GEO_HOST" "action=probe"
+/nvr/ipc "/tmp/SI_GEO_HOST" "action=save"
+/nvr/ipc "/tmp/SI_GEO_HOST" "action=manual_set_ip&mac=00-13-E2-FF-17-BE&ip=192.168.99.144&username=admin&password=admin"
+/nvr/ipc "/tmp/SI_GEO_HOST" "action=set_dhcp_mode&mac=00-13-E2-FF-17-BE&username=admin&password=admin"
+/nvr/ipc "/tmp/SI_GEO_HOST" "action=query&ip=192.168.99.109"
+/nvr/ipc "/tmp/SI_GEO_HOST" "action=purge"
+/nvr/ipc "/tmp/SI_GEO_HOST" "action=reboot_device&mac=00-13-E2-FF-17-BE&username=admin&password=admin"
+/nvr/ipc "/tmp/SI_GEO_HOST" "action=auto_set_ip&mac=00-13-E2-FF-17-BE&username=admin&password=admin"
+
+
+/nvr/ipc "/tmp/SI_GEO_HOST" "action=auto_set_ip&mac=00-13-E2-FF-17-BE&username=admin"
+
+#NetwoekManager IPC test command
+/nvr/ipc "/tmp/SI_NETWORK" "action=set_network&interface=wan&src=Utility&note=Static"
+
+#Temperatur IPC test command
+event=temperature_update&temperature_c_value=41&temperature_f_value=105
+/nvr/ipc "/tmp/SI_TEMPERATURE" "action=get_temperature"
+/nvr/ipc "/tmp/SI_DISCOVER" "action=set_network&interface=wan&src=Utility&note=Static"
+
+
+#OnvifHost IPC test command
+/nvr/ipc "/tmp/SI_ONVIF_HOST" "action=get_services&channel=1&uri=http://192.168.99.109:80/onvif/device_service&username=admin&password=admin"
+
+/nvr/ipc "/tmp/SI_ONVIF_HOST" "action=get_profiles&channel=1&uri=http://192.168.99.104:80/onvif/media&username=admin&password=admin"
+
+/nvr/ipc "/tmp/SI_ONVIF_HOST" "action=get_profiles&channel=1&uri=http://192.168.99.10:8899/onvif/media&username=admin&password=admin"
+
+/nvr/ipc "/tmp/SI_ONVIF_HOST" "action=get_stream_uri&channel=1&uri=http://192.168.99.109:80/onvif/device_service&username=admin&password=admin&token=profile_Default&stream_type=udp"
+
+/nvr/ipc "/tmp/SI_ONVIF_HOST" "action=get_stream_uri&channel=1&uri=http://192.168.6.156:80/onvif/device_service&username=admin&password=root&token=profile_Default"
+
+/nvr/ipc "/tmp/SI_ONVIF_HOST" "action=get_snapshot_uri&channel=1&uri=http://192.168.99.109:80/onvif/device_service&username=admin&password=admin&token=profile2_Default"
+
+/nvr/ipc "/tmp/SI_ONVIF_HOST" "action=get_video_encoder_options&channel=1&uri=http://192.168.99.104:80/onvif/device_service&username=admin&password=admin&token=profile_Default"
+
+/nvr/ipc "/tmp/SI_ONVIF_HOST" "action=get_video_encoder_options&channel=1&uri=http://192.168.99.104:80/onvif/device_service&username=admin&password=admin&token=profile_Default"
+
+/nvr/ipc "/tmp/SI_ONVIF_HOST" "action=set_video_encoder_configuration&channel=1&uri=http://192.168.99.109:80/onvif/device_service&username=admin&password=admin&token=VE_Default&codec=h264&width=1280&height=720&quality=0&fps=30&bitrate=4096&gov=30&session_timeout=60000"
+
+
+/nvr/ipc "/tmp/SI_ONVIF_HOST" "action=set_video_encoder_configuration&channel=1&uri=http://192.168.99.109:80/onvif/device_service&username=admin&password=admin&token=VE_Default&codec=h264&width=1920&height=1080&quality=0&fps=30&bitrate=4096&gov=30&session_timeout=60000"
+
+
+rtsp://192.168.6.156:8554/CH001.sdp

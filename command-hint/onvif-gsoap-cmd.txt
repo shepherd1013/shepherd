@@ -1,0 +1,47 @@
+#Generate ws-discovery header file
+../../gsoap-2.8/gsoap/wsdl/wsdl2h -cegxy -o wsdiscovery.h -t ../../gsoap-2.8/gsoap/WS/WS-typemap.dat http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-wsdl-os.wsdl
+
+#Generate ws-discovery source code of server side
+../../gsoap-2.8/gsoap/src/soapcpp2 -S -I ../../gsoap-2.8/gsoap/import wsdiscovery.h
+
+#Generate ws-discovery source code of client side
+../../gsoap-2.8/gsoap/src/soapcpp2 -C -I ../../gsoap-2.8/gsoap/import wsdiscovery.h
+
+
+#Generate header file of device source code from WSDL
+../../gsoap-2.8/gsoap/wsdl/wsdl2h -gxy -o  device-code-gen.h -t ../../gsoap-2.8/gsoap/WS/WS-typemap.dat http://www.onvif.org/onvif/ver10/device/wsdl/devicemgmt.wsdl http://www.w3.org/2006/03/addressing/ws-addr.xsd http://www.onvif.org/onvif/ver10/schema/onvif.xsd
+
+#Generate device source code of client side
+../../gsoap-2.8/gsoap/src/soapcpp2 -C -x -I ../../gsoap-2.8/gsoap/import device-code-gen.h
+
+
+#Generate header file of device and media source code from WSDL
+../../gsoap/x86/gsoap-2.8/gsoap/wsdl/wsdl2h -gxy -o  onvif-client-code-gen.h -t ../../gsoap-2.8/gsoap/WS/WS-typemap.dat http://www.onvif.org/onvif/ver10/device/wsdl/devicemgmt.wsdl http://www.w3.org/2006/03/addressing/ws-addr.xsd http://www.onvif.org/onvif/ver10/schema/onvif.xsd http://www.onvif.org/onvif/ver10/media/wsdl/media.wsdl
+
+#Generate onvif source code of client side
+../../gsoap/x86/gsoap-2.8/gsoap/src/soapcpp2 -C -x -I ../../gsoap/x86/gsoap-2.8/gsoap/import onvif-client-code-gen.h
+
+
+#Ref
+./wsdl2h -cegxy -o wsdiscovery.h -t ../../WS/WS-typemap.dat http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-wsdl-os.wsdl 
+
+soapcpp2 -S -I ../../import wsdiscovery.h
+
+wsdl2h -c -o media.h http://www.onvif.org/ver10/device/wsdl http://www.w3.org/2006/03/addressing/ws-addr.xsd 
+
+
+
+./configure --host=arm-hisiv200-linux && make
+
+./Configure linux-armv4
+CC=arm-hisiv200-linux-gcc ./config no-asm prefix=/opt/hisi-linux/x86-arm/arm-hisiv200-linux/target/bin/
+CC=/opt/hisi-linux/x86-arm/arm-hisiv200-linux/target/bin/arm-hisiv200-linux-gcc ./config no-asm
+
+./config --cross-compile-prefix=arm-hisiv200-linux- no-asm
+tftp -g -r onvif-wsse-client-test 10.0.0.100
+
+
+
+../../gsoap/x86/gsoap-2.8/gsoap/wsdl/wsdl2h -gxy -o onvif-wsse-device-media.h -t ../../gsoap/x86/gsoap-2.8/gsoap/WS/typemap.dat http://www.onvif.org/onvif/ver10/media/wsdl/media.wsdl http://www.onvif.org/onvif/ver10/device/wsdl/devicemgmt.wsdl
+
+../../gsoap/x86/gsoap-2.8/gsoap/src/soapcpp2 -C -x -I../../gsoap/x86/gsoap-2.8/gsoap -I../../gsoap/x86/gsoap-2.8/gsoap/import onvif-wsse-device-media.h
