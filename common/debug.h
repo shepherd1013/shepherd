@@ -20,6 +20,7 @@ enum DebugLevel {
 	DBG_LEVEL_WARN,
 	DBG_LEVEL_INFO,
 	DBG_LEVEL_DEBUG,
+	DBG_LEVEL_AMOUNT
 };
 
 extern enum DebugLevel eDebugLevel;

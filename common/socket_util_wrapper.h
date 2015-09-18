@@ -8,22 +8,19 @@
 #ifndef SOCKET_UTIL_WRAPPER_H_
 #define SOCKET_UTIL_WRAPPER_H_
 
-#ifndef BOOL
-#define BOOL	int
-#define TRUE	1
-#define FALSE	0
-#endif
+#include "common_define.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
 
 BOOL SocketUtil_DuplicateFD(int nOldFD, int *nNewFD);
+BOOL SocketUtil_Socket(int domain, int type, int protocol, int *sFD);
 
 
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//}
+//#endif
 
 #endif /* SOCKET_UTIL_WRAPPER_H_ */

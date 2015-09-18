@@ -118,7 +118,7 @@ bool SocketUtil::Close(int sockfd)
 bool SocketUtil::Wait(time_t tMS, list<int> sRegisterFD, int* sEventFD)
 {
 	if (sRegisterFD.empty()) {
-//		ERR_PRINT("Resgister socket FD is empty!\n");
+//		ERR_PRINT("Resgistered socket FD is empty!\n");
 		return false;
 	}
 
@@ -160,7 +160,7 @@ bool SocketUtil::Wait(time_t tMS, list<int> sRegisterFD, int* sEventFD)
 bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD)
 {
 	if (sRegisterFD.empty()) {
-		ERR_PRINT("Resgister socket FD is empty!\n");
+//		ERR_PRINT("Resgister socket FD is empty!\n");
 		return false;
 	}
 
@@ -323,6 +323,7 @@ bool SocketIPCServer::Recv()
 		ERR_PRINT("%s\n", strerror(nRet));
 		return false;
 	}
+	m_buffer[nRet] = 0;
 	DBG_PRINT("Recv data: %s\n", m_buffer);
 	return true;
 }

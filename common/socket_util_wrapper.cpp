@@ -6,16 +6,21 @@
  */
 #include "debug.h"
 #include "socket_util.h"
-
-#ifndef BOOL
-#define BOOL	int
-#define TRUE	1
-#define FALSE	0
-#endif
+#include "common_define.h"
 
 BOOL SocketUtil_DuplicateFD(int nOldFD, int *nNewFD)
 {
 	bool bRet = SocketUtil::DuplicateFD(nOldFD, nNewFD);
+	if (bRet == false) {
+		ERR_PRINT("SocketUtil::DuplicateFD() error!\n");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+BOOL SocketUtil_Socket(int domain, int type, int protocol, int *sFD)
+{
+	bool bRet = SocketUtil::Socket(domain, type, protocol, sFD);
 	if (bRet == false) {
 		ERR_PRINT("SocketUtil::DuplicateFD() error!\n");
 		return FALSE;

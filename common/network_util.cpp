@@ -267,7 +267,7 @@ bool NetworkUtil::Broadcast(unsigned int uTargetPort, const void* sSendData, uns
 	DBG_PRINT("Bcast IP:%s\n", sIP.c_str());
 
 	struct sockaddr_in stRemoteAddr;
-	stRemoteAddr.sin_port = HostToNetworkByteOrder((unsigned short)uTargetPort);
+	stRemoteAddr.sin_port = NetworkUtil::HostToNetworkByteOrder((unsigned short)uTargetPort);
 	stRemoteAddr.sin_family = AF_INET;
 	stRemoteAddr.sin_addr.s_addr = uBcastIP.s_addr;
 
@@ -526,7 +526,7 @@ bool NetworkUtil::IsBridgeEnabled(bool *bIsEnabled, string &sBridgeIfName)
 	*bIsEnabled = false;
 
 	for (list<string>::iterator it = lList.begin(); it != lList.end(); it++) {
-		DBG_PRINT("if name: %s\n", it->c_str());
+//		DBG_PRINT("if name: %s\n", it->c_str());
 		if (it->find("br") != string::npos) {
 			*bIsEnabled = true;
 			sBridgeIfName = *it;
