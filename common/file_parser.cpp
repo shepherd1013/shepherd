@@ -5,6 +5,7 @@
  *      Author: jacken
  */
 #include <string.h>
+#include <assert.h>
 #include "file_parser.h"
 #include "debug.h"
 #include "file_util.h"
@@ -13,8 +14,10 @@ FileParser::FileParser(const char *sFilename)
 {
 	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
 	fFd = File::Open(sFilename, "r");
-	if(fFd != NULL){
-		return;
+	if (fFd == NULL) {
+		ERR_PRINT("File::Open(%s) error!\n",sFilename);
+		assert(0);
+//		return;
 	}
 }
 
@@ -22,8 +25,8 @@ FileParser::~FileParser()
 {
 	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
 	bool bRet = File::Close(fFd);
-	if(bRet == false){
-		ERR_PRINT("File::Close() error!");
+	if (bRet == false) {
+		ERR_PRINT("File::Close() error!\n");
 	}
 }
 
