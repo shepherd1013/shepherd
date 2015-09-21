@@ -17,7 +17,7 @@ FILE* File::Open(const char *sFilename, const char *sMode)
 	pFile = fopen(sFilename, sMode);
 	if(pFile == NULL) {
 		nRet = errno;
-		ERR_PRINT("%s\n", strerror(nRet));
+		ERR_PRINT("fopen(%s): %s\n", sFilename, strerror(nRet));
 		return NULL;
 	}
 	return pFile;
