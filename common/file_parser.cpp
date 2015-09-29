@@ -66,7 +66,12 @@ bool FileParser::ReadLineWithToken(char *sLine, unsigned int uLineSize, const ch
 			}
 		}
 
-		if(bIsTokenFound == false){
+		if (bIsTokenFound == false) {
+			if (uLineIndex == uLineSize) {
+				sLine[uLineIndex] = 0;
+				ERR_PRINT("The sLine space is not enough!\n");
+				return false;
+			}
 			sLine[uLineIndex] = (char)nChar;
 			uLineIndex++;
 		}
