@@ -13,13 +13,24 @@ class FileParser
 {
 public:
 	FileParser(const char *sFilename);
-	~FileParser();
+	virtual ~FileParser();
 
 	bool ReadLine(char *sLine, unsigned int uLineSize);
 	bool ReadLineWithToken(char *sLine, unsigned int uLineSize, const char *sToken = "\n");
 
-private:
+protected:
 	FILE *fFd;
 };
+
+class IniFileParser: public FileParser
+{
+public:
+	IniFileParser(const char *sFilename) : FileParser(sFilename){};
+	virtual ~IniFileParser();
+
+	bool GetKeyValue(const char *sKey, char *sValue, unsigned int uValueSize);
+};
+
+
 
 #endif /* FILE_PARSER_H_ */

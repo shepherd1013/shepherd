@@ -17,6 +17,12 @@ void Unittest::Run()
 		ERR_PRINT("this->TestFileParser() error!\n");
 		return;
 	}
+
+	bRet = this->TestIniFileParser();
+	if (bRet == false) {
+		ERR_PRINT("this->TestIniFileParser() error!\n");
+		return;
+	}
 }
 
 bool Unittest::TestFileParser()
@@ -33,5 +39,19 @@ bool Unittest::TestFileParser()
 		}
 	} while(bRet);
 
+	return true;
+}
+
+bool Unittest::TestIniFileParser()
+{
+	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+	IniFileParser parser("test.ini");
+	char sValue[128] = {0};
+	const char *sKey = "IPC.Local.Pat";
+	if(parser.GetKeyValue(sKey, sValue, sizeof(sValue)) == false) {
+		ERR_PRINT("parser.GetKeyValue(%s) error!\n", sKey);
+		return false;
+	}
+	DBG_PRINT("sValue: %s\n", sValue);
 	return true;
 }

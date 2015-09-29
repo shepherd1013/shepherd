@@ -79,4 +79,50 @@ bool FileParser::ReadLineWithToken(char *sLine, unsigned int uLineSize, const ch
 	return true;
 }
 
+IniFileParser::~IniFileParser()
+{
+	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+}
 
+bool IniFileParser::GetKeyValue(const char *sKey, char *sValue, unsigned int uValueSize)
+{
+	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+	bool bRet = false;
+	char sLine[256] = {0};
+	char *pChar = NULL;
+
+	if (sKey == NULL) {
+		ERR_PRINT("sKey is NULL!\n");
+		return false;
+	}
+
+	if (sValue == NULL) {
+		ERR_PRINT("sValue is NULL!\n");
+		return false;
+	}
+
+	while (true) {
+		bRet = this->ReadLine(sLine, sizeof(sLine));
+		if (bRet == false) {
+			ERR_PRINT("this->ReadLine() error!\n");
+			return false;
+		}
+
+		pChar = strtok(sLine, " =");
+		if(pChar == NULL) {
+			continue;
+		}
+		DBG_PRINT("pChar: %s\n", pChar);
+		if (strncmp(pChar, sKey, strlen(pChar)) != 0) {
+			continue;
+		}
+		pChar = strtok(NULL, " =");
+		if(pChar == NULL) {
+			continue;
+		}
+		DBG_PRINT("pChar: %s\n", pChar);
+		strncpy(sValue, pChar, uValueSize);
+		break;
+	}
+	return true;
+}
