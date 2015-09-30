@@ -59,6 +59,8 @@ public:
 */
 	static bool IsBridgeEnabled(bool *bIsEnabled, string &sBridgeIfName);
 	static bool EnumerateRunningInterfaceIPv4(list<string> &lList);
+	static bool IsIPv4FormateValid(const char *sIP);
+	static bool IsIPv4ValueValid(int nIP);
 };
 
 #endif /* NETWORK_UTIL_H_ */

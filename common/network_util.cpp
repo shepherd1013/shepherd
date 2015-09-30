@@ -535,3 +535,54 @@ bool NetworkUtil::IsBridgeEnabled(bool *bIsEnabled, string &sBridgeIfName)
 	}
 	return true;
 }
+
+bool NetworkUtil::IsIPv4FormateValid(const char *sIP)
+{
+	char sTmpIP[16] = {0};
+	char *pRet = NULL;
+	int nIP = 0;
+	strncpy(sTmpIP, sIP, sizeof(sTmpIP));
+
+	pRet = strtok(sTmpIP, ".");
+	if (pRet == NULL) {
+		return false;
+	}
+	nIP = atoi(pRet);
+	if ( (nIP <= 0) || (nIP > 254) ) {
+		return false;
+	}
+
+	pRet = strtok(NULL, ".");
+	if (pRet == NULL) {
+		return false;
+	}
+	if (IsIPv4ValueValid(atoi(pRet)) == false) {
+		return false;
+	}
+
+	pRet = strtok(NULL, ".");
+	if (pRet == NULL) {
+		return false;
+	}
+	if (IsIPv4ValueValid(atoi(pRet)) == false) {
+		return false;
+	}
+
+	pRet = strtok(NULL, ".");
+	if (pRet == NULL) {
+		return false;
+	}
+	nIP = atoi(pRet);
+	if ( (nIP <= 0) || (nIP > 254) ) {
+		return false;
+	}
+	return true;
+}
+
+bool NetworkUtil::IsIPv4ValueValid(int nIP)
+{
+	if ( (nIP < 0) || (nIP > 255) ) {
+		return false;
+	}
+	return true;
+}
