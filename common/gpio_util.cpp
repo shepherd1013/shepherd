@@ -125,7 +125,6 @@ bool GpioUtil::ReadPinValue(unsigned int *pValue)
 	int nFD = -1;
 	const unsigned int REGISTER_SIZE = 0x1000;
 	unsigned int uPhysicalMemAddr = 0;
-	unsigned int uValue = 0;
 
 	if(this->GetGPIOGroupPhysicalAddr(&uPhysicalMemAddr) == false) {
 		ERR_PRINT("this->GetGPIOGroupPhysicalAddr() error!\n");
@@ -150,8 +149,8 @@ bool GpioUtil::ReadPinValue(unsigned int *pValue)
 
 //	DBG_PRINT("uPhysicalMemAddr: 0x%x \n", uPhysicalMemAddr);
 //	DBG_PRINT("uPhysicalMemAddr+ (1 << (m_nPin + 2)): 0x%x \n", uPhysicalMemAddr + (1 << (m_nPin + 2)));
-	uValue = *((volatile unsigned int *)(pVirtualMemAddr + (1 << (m_uPinNum + 2))));
-	uValue = uValue >> (m_uPinNum);
+	*pValue = *((volatile unsigned int *)(pVirtualMemAddr + (1 << (m_uPinNum + 2))));
+	*pValue = *pValue >> (m_uPinNum);
 
 	int nRet = munmap(pVirtualMemAddr, REGISTER_SIZE);
 	if (nRet < 0) {
