@@ -13,7 +13,7 @@
 FileParser::FileParser(const char *sFilename)
 {
 	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
-	fFd = File::Open(sFilename, "r");
+	fFd = FileUtil::Open(sFilename, "r");
 	if (fFd == NULL) {
 		ERR_PRINT("File::Open(%s) error!\n",sFilename);
 		assert(0);
@@ -24,7 +24,7 @@ FileParser::FileParser(const char *sFilename)
 FileParser::~FileParser()
 {
 	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
-	bool bRet = File::Close(fFd);
+	bool bRet = FileUtil::Close(fFd);
 	if (bRet == false) {
 		ERR_PRINT("File::Close() error!\n");
 	}

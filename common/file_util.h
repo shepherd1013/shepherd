@@ -12,9 +12,22 @@
 class File
 {
 public:
+	File(const char *sFilePath);
+	~File();
+	bool Read(void *pData, size_t uDataSize, size_t uNumElement);
+	bool Write(const void *pData, size_t uDataSize, size_t uNumElement);
+
+protected:
+	FILE *fpFile;
+};
+
+class FileUtil
+{
+public:
 	static FILE*	Open(const char *filename, const char *sMode);
 	static bool	Close(FILE *fp);
-	static bool	Write(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+	static bool	Write(const void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile);
+	static bool	Read(void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile);
 };
 
 

@@ -12,9 +12,6 @@ class Unittest
 {
 public:
 	void Run();
-private:
-	bool TestFileParser();
-	bool TestIniFileParser();
 };
 
 
