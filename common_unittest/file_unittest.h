@@ -18,6 +18,9 @@ private:
 	bool TestIniFileParser();
 	bool TestFileWrite();
 	bool TestFileRead();
+	bool TestGetFileSize();
+	bool TestGetFileAccessTime();
+	bool TestGetFileModificationTime();
 };
 
 

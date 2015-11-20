@@ -7,6 +7,7 @@
 #include "file_util.h"
 #include <errno.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "debug.h"
 
 FILE* FileUtil::Open(const char *sFilename, const char *sMode)
@@ -55,6 +56,47 @@ bool FileUtil::Read(void *pData, size_t uDataSize, size_t uNumElement, FILE *pFi
 		ERR_PRINT("fwrite() error!\n");
 		return false;
 	}
+	return true;
+}
+
+bool FileUtil::GetFileSize(const char *filename, long int *pSize)
+{
+	struct stat stFileStat;
+	int nRet = stat(filename, &stFileStat);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s\n", strerror(nRet));
+		return false;
+	}
+	*pSize = stFileStat.st_size;
+	return true;
+}
+
+bool FileUtil::GetFileAccessTime(const char *filename, struct timespec *pTime)
+{
+	struct stat stFileStat;
+	int nRet = stat(filename, &stFileStat);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s\n", strerror(nRet));
+		return false;
+	}
+	pTime->tv_sec = stFileStat.st_atim.tv_sec;
+	pTime->tv_nsec = stFileStat.st_atim.tv_nsec;
+	return true;
+}
+
+bool FileUtil::GetFileModTime(const char *filename, struct timespec *pTime)
+{
+	struct stat stFileStat;
+	int nRet = stat(filename, &stFileStat);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s\n", strerror(nRet));
+		return false;
+	}
+	pTime->tv_sec = stFileStat.st_mtim.tv_sec;
+	pTime->tv_nsec = stFileStat.st_mtim.tv_nsec;
 	return true;
 }
 

@@ -28,6 +28,9 @@ public:
 	static bool	Close(FILE *fp);
 	static bool	Write(const void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile);
 	static bool	Read(void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile);
+	static bool GetFileSize(const char *filename, long int *pSize);
+	static bool GetFileAccessTime(const char *filename, struct timespec *pTime);
+	static bool GetFileModTime(const char *filename, struct timespec *pTime);
 };
 
 
