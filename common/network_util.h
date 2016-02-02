@@ -58,9 +58,11 @@ public:
 		IFF_DYNAMIC         裝置介面關閉時丟棄地址
 */
 	static bool IsBridgeEnabled(bool *bIsEnabled, string &sBridgeIfName);
+	static bool IsBridgeEnabled(bool *bIsEnabled, char *sBridgeIfName, unsigned int uIfNameSize);
 	static bool EnumerateRunningInterfaceIPv4(list<string> &lList);
 	static bool IsIPv4FormateValid(const char *sIP);
 	static bool IsIPv4ValueValid(int nIP);
+	static bool IsSingleInterface(bool *bIsSingleIf);
 };
 
 #endif /* NETWORK_UTIL_H_ */

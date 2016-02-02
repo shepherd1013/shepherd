@@ -35,6 +35,7 @@ public:
 	static bool Bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 	static bool BindInterface(int nSocketFD, const char *sInterfaceName);
 	static bool BindPortOnly(int sockfd, unsigned int port);
+	static bool BindPortOnly(int sockfd, unsigned int port, const char* sIP);
 	static bool Connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 	static bool Close(int sockfd);
 	static bool SetSockOpt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
@@ -52,6 +53,9 @@ public:
 	 * 	ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen);
 	 */
 	static bool DuplicateFD(int nOldFD, int *nNewFD);
+	static bool Listen(int sockfd, int nPendingNum);
+	static bool Accept(int sockfd, struct sockaddr *RemoteAddr, socklen_t *RemoteAddrLen, int *nAcceptedFD);
+	static bool Send(int sockfd, const void *buf, size_t len, int flags);
 };
 
 class Socket

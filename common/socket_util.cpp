@@ -57,6 +57,31 @@ bool SocketUtil::BindPortOnly(int sockfd, unsigned int port)
 	sAddr.sin_port = NetworkUtil::HostToNetworkByteOrder((unsigned short)port);
 	sAddr.sin_family = AF_INET;
 	sAddr.sin_addr.s_addr = NetworkUtil::HostToNetworkByteOrder(INADDR_ANY);
+	int enable = 1;
+	if (SocketUtil::SetSockOpt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) == false) {
+		ERR_PRINT("SocketUtil::Setsockopt() error!\n");
+		return false;
+	}
+	bool bRet = SocketUtil::Bind(sockfd, (struct sockaddr*)&sAddr, sizeof(sAddr));
+	if (bRet == false) {
+		ERR_PRINT("SocketUtil::Bind() error!\n");
+		return false;
+	}
+	return true;
+}
+
+bool SocketUtil::BindPortOnly(int sockfd, unsigned int port, const char* sIP)
+{
+	struct sockaddr_in sAddr;
+	sAddr.sin_port = NetworkUtil::HostToNetworkByteOrder((unsigned short)port);
+	sAddr.sin_family = AF_INET;
+
+	struct in_addr uIP;
+	if (NetworkUtil::IPv4AddressTextToBinary(sIP, &uIP) == false) {
+		return false;
+	}
+	sAddr.sin_addr.s_addr = uIP.s_addr;
+
 	bool bRet = SocketUtil::Bind(sockfd, (struct sockaddr*)&sAddr, sizeof(sAddr));
 	if (bRet == false) {
 		ERR_PRINT("SocketUtil::Bind() error!\n");
@@ -237,6 +262,65 @@ bool SocketUtil::DuplicateFD(int nOldFD, int *nNewFD)
 		return false;
 	}
 	*nNewFD = nRet;
+	return true;
+}
+
+
+bool SocketUtil::Listen(int sockfd, int nPendingNum)
+{
+	int nRet;
+	nRet = listen(sockfd, nPendingNum);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s\n", strerror(nRet));
+		return false;
+	}
+	return true;
+}
+
+bool SocketUtil::Accept(int sockfd, struct sockaddr *RemoteAddr, socklen_t *RemoteAddrLen, int *nAcceptedFD)
+{
+	int nRet;
+	nRet = accept(sockfd, RemoteAddr, RemoteAddrLen);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("%s\n", strerror(nRet));
+		return false;
+	}
+	*nAcceptedFD = nRet;
+	return true;
+}
+
+bool SocketUtil::Send(int sockfd, const void *buf, size_t len, int flags)
+{
+	int nSndRet = 0;
+	char* pBuf = (char*)buf;
+	int nDataSize = len;
+	unsigned int uSndTotal = 0;
+	while (true) {
+		nSndRet = send(sockfd, pBuf, nDataSize, 0);
+		if (nSndRet <= 0) {
+			if (nSndRet < 0) {
+				nSndRet = errno;
+				if (nSndRet != ECONNRESET) {
+					ERR_PRINT("send():%s\n", strerror(nSndRet));
+				}
+			} else {
+				DBG_PRINT("Client disconnect!\n");
+			}
+			return false;
+		}
+
+		uSndTotal += nSndRet;
+		if (nSndRet != nDataSize) {
+			DBG_PRINT("Resend data!\n");
+			nDataSize -= nSndRet;
+			pBuf += nSndRet;
+			continue;
+		}
+		break;
+	}
+	DBG_PRINT("Send total size: %u\n", uSndTotal);
 	return true;
 }
 

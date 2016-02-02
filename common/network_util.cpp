@@ -536,6 +536,38 @@ bool NetworkUtil::IsBridgeEnabled(bool *bIsEnabled, string &sBridgeIfName)
 	return true;
 }
 
+bool NetworkUtil::IsBridgeEnabled(bool *bIsEnabled, char *sBridgeIfName, unsigned int uIfNameSize)
+{
+	bool bRet;
+	if (sBridgeIfName == NULL) {
+		ERR_PRINT("sBridgeIfName is NULL!\n");
+		return false;
+	}
+
+	list<string> lList;
+	bRet = NetworkUtil::EnumerateAllInterfaceIPv4(lList);
+	if (bRet == false) {
+		ERR_PRINT("NetworkUtil::EnumerateAllInterfaceIPv4() error!\n");
+		return false;
+	}
+
+	*bIsEnabled = false;
+
+	for (list<string>::iterator it = lList.begin(); it != lList.end(); it++) {
+//		DBG_PRINT("if name: %s\n", it->c_str());
+		if (it->find("br") != string::npos) {
+			*bIsEnabled = true;
+			if (uIfNameSize < it->size()) {
+				ERR_PRINT("The sBridgeIfName size isn't enough!\n");
+				return false;
+			}
+			strncpy(sBridgeIfName, it->c_str(), it->size());
+			break;
+		}
+	}
+	return true;
+}
+
 bool NetworkUtil::IsIPv4FormateValid(const char *sIP)
 {
 	char sTmpIP[16] = {0};
@@ -583,6 +615,32 @@ bool NetworkUtil::IsIPv4ValueValid(int nIP)
 {
 	if ( (nIP < 0) || (nIP > 255) ) {
 		return false;
+	}
+	return true;
+}
+
+bool NetworkUtil::IsSingleInterface(bool *bIsSingleIf)
+{
+	bool bRet;
+	unsigned int nInterfaceCount = 0;
+	list<string> lList;
+	bRet = NetworkUtil::EnumerateAllInterfaceIPv4(lList);
+	if (bRet == false) {
+		ERR_PRINT("NetworkUtil::EnumerateAllInterfaceIPv4() error!\n");
+		return false;
+	}
+
+	for (list<string>::iterator it = lList.begin(); it != lList.end(); it++) {
+//		DBG_PRINT("if name: %s\n", it->c_str());
+		if (it->find("eth") != string::npos) {
+			nInterfaceCount++;
+		}
+	}
+
+	if (nInterfaceCount == 1) {
+		*bIsSingleIf = true;
+	} else {
+		*bIsSingleIf = false;
 	}
 	return true;
 }
