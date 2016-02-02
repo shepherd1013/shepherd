@@ -12,7 +12,10 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#define DEBUG_OUTPUT stderr
+#define DEBUG_OUTPUT stdout
+#define INFO_OUTPUT stdout
+#define WARN_OUTPUT stderr
+#define ERROR_OUTPUT stderr
 
 enum DebugLevel {
 	DBG_LEVEL_NONE = 0,
@@ -34,22 +37,22 @@ extern enum DebugLevel eDebugLevel;
 
 #define INF_PRINT(fmt, args ...) { \
 	if(eDebugLevel >= DBG_LEVEL_INFO) {\
-		fprintf(DEBUG_OUTPUT, "[INF] [%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);\
-		fprintf(DEBUG_OUTPUT, fmt, ## args);\
+		fprintf(INFO_OUTPUT, "[INF] [%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);\
+		fprintf(INFO_OUTPUT, fmt, ## args);\
 	}\
 }
 
 #define WARN_PRINT(fmt, args ...) { \
 	if(eDebugLevel >= DBG_LEVEL_WARN) {\
-		fprintf(DEBUG_OUTPUT, "[WARN] [%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);\
-		fprintf(DEBUG_OUTPUT, fmt, ## args);\
+		fprintf(WARN_OUTPUT, "[WARN] [%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);\
+		fprintf(WARN_OUTPUT, fmt, ## args);\
 	}\
 }
 
 #define ERR_PRINT(fmt, args ...) { \
 	if(eDebugLevel >= DBG_LEVEL_ERROR) {\
-		fprintf(DEBUG_OUTPUT, "[ERR] [%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);\
-		fprintf(DEBUG_OUTPUT, fmt, ## args);\
+		fprintf(ERROR_OUTPUT, "[ERR] [%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);\
+		fprintf(ERROR_OUTPUT, fmt, ## args);\
 	}\
 }
 
