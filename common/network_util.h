@@ -36,7 +36,6 @@ public:
 	static unsigned short HostToNetworkByteOrder(unsigned short uHost);
 	static unsigned int  NetworkToHostByteOrder (unsigned int uHost);
 	static unsigned short  NetworkToHostByteOrder (unsigned short uHost);
-	static bool EnumerateInterfaceIPv4(list<string> &lList);
 	static bool GetFlagsIPv4(const char* sInterfaceName, short int* nIFFlags);
 /*
 	nIFFlags 的各項旗標和說明：
@@ -63,6 +62,8 @@ public:
 	static bool IsIPv4FormateValid(const char *sIP);
 	static bool IsIPv4ValueValid(int nIP);
 	static bool IsSingleInterface(bool *bIsSingleIf);
+	static bool GetNetTotalFlow(const char* sIfName, unsigned long int *uRx, unsigned long int *uTx);
+	static bool GetNetFlow(const char* sIfName, unsigned int tIntervalMS, double *dRxFlow, double *dTxFlow);
 };
 
 #endif /* NETWORK_UTIL_H_ */

@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <net/if_arp.h>
 #include "socket_util.h"
+#include "file_parser.h"
 
 bool NetworkUtil::EnumerateUpInterfaceIPv4(list<string> &lList)
 {
@@ -642,5 +643,66 @@ bool NetworkUtil::IsSingleInterface(bool *bIsSingleIf)
 	} else {
 		*bIsSingleIf = false;
 	}
+	return true;
+}
+
+bool NetworkUtil::GetNetTotalFlow(const char* sIfName, unsigned long int *uRx, unsigned long int *uTx)
+{
+	*uRx = 0;
+	*uTx = 0;
+	const char* sFile = "/proc/net/dev";
+	FileParser parser(sFile);
+
+	char sLine[256] = {0};
+	while (parser.ReadLine(sLine, sizeof(sLine))) {
+		if (strstr(sLine, sIfName)) {
+//			DBG_PRINT("sLine: %s\n", sLine);
+			char *pSave = NULL;
+			char *pch = strtok_r(sLine, " ", &pSave);
+			unsigned int uIdx = 0;
+			while (pch) {
+//				DBG_PRINT("pch: %s\n", pch);
+				if (uIdx == 1) { //Get RX flow
+					*uRx = strtoul(pch, NULL, 10);
+//					printf("RX = %lu\n", *uRx);
+				}
+
+				if (uIdx == 9) { //Get TX flow
+					*uTx = strtoul(pch, NULL, 10);
+//					printf("TX = %lu\n", *uTx);
+				}
+				pch = strtok_r(NULL, " ", &pSave);
+				uIdx++;
+			}
+		}
+	}
+
+	if ((uRx == 0) || (uTx == 0)) {
+		ERR_PRINT("Can't get interface (%s) flow from %s!\n", sIfName, sFile);
+		return false;
+	}
+	return true;
+}
+
+bool NetworkUtil::GetNetFlow(const char* sIfName, unsigned int tIntervalMS, double *dRxFlow, double *dTxFlow)
+{
+	unsigned int uInterval = tIntervalMS * 1000;
+	unsigned long int uRx = 0;
+	unsigned long int uTx = 0;
+	if (NetworkUtil::GetNetTotalFlow(sIfName, &uRx, &uTx) == false) {
+		return false;
+	}
+
+	usleep(uInterval);
+
+	unsigned long int uCurRx = 0;
+	unsigned long int uCurTx = 0;
+	if (NetworkUtil::GetNetTotalFlow(sIfName, &uCurRx, &uCurTx) == false) {
+		return false;
+	}
+	*dRxFlow = uCurRx - uRx;
+	*dTxFlow = uCurTx - uTx;
+	*dRxFlow = (*dRxFlow * 8 / 1024 / 1024) * ((double)1000000/uInterval);
+	*dTxFlow = (*dTxFlow * 8 / 1024 / 1024) * ((double)1000000/uInterval);
 	return true;
 }
