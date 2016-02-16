@@ -64,11 +64,9 @@ class Socket
 public:
 	Socket();
 	~Socket();
-
+	int GetFD();
 protected:
 	int m_sFD;
-
-	int GetFD();
 };
 
 class SocketIPC: public Socket
@@ -83,17 +81,19 @@ protected:
 class SocketIPCServer: public SocketIPC
 {
 public:
+	SocketIPCServer();
 	SocketIPCServer(const char *sLocalPath);
 	~SocketIPCServer();
 
 	bool Wait(time_t tMS);
 	bool Recv();
+	bool Recv(char* sBuf, unsigned int uBufSize);
 	bool Send(const char *SendData, unsigned int uDataSize);
 
 protected:
-	char			m_sBuf[2048];
+	char			m_sBuf[4096];
 	sockaddr_un		m_unRemoteAddr;
-	socklen_t		m_nRemoteAddrLen;
+	socklen_t		m_uRemoteAddrLen;
 };
 
 class SocketIPCClient: public SocketIPC

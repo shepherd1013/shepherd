@@ -226,13 +226,17 @@ bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD)
 
 bool SocketUtil::RecvFrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *RemoteAddr, socklen_t *RemoteAddrLen, unsigned int *uRecvDataLen)
 {
-	int nRet = recvfrom(sockfd, buf, len, 0, RemoteAddr, RemoteAddrLen);
+	int nRet = recvfrom(sockfd, buf, len, flags, RemoteAddr, RemoteAddrLen);
 	if (nRet < 0) {
 		nRet = errno;
 		ERR_PRINT("recvfrom() error: %s!\n", strerror(nRet));
 		return false;
 	}
 	*uRecvDataLen = nRet;
+	if ((unsigned int)nRet < len) {
+		char *pBuf = (char*)buf;
+		pBuf[nRet] = 0;
+	}
 	return true;
 }
 
@@ -351,7 +355,12 @@ SocketIPC::~SocketIPC()
 {
 }
 
+SocketIPCServer::SocketIPCServer()
+{
+}
+
 SocketIPCServer::SocketIPCServer(const char* sLocalPath)
+:m_uRemoteAddrLen(sizeof(m_unRemoteAddr))
 {
 	if (SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &m_sFD) == false) {
 		return;
@@ -394,11 +403,21 @@ bool SocketIPCServer::Wait(time_t tMS)
 bool SocketIPCServer::Recv()
 {
 	unsigned int uRecvLen;
-	if (SocketUtil::RecvFrom(m_sFD, m_sBuf, sizeof(m_sBuf), 0, (struct sockaddr *)&m_unRemoteAddr, &m_nRemoteAddrLen, &uRecvLen) == false) {
+	if (SocketUtil::RecvFrom(m_sFD, m_sBuf, sizeof(m_sBuf), 0, (struct sockaddr *)&m_unRemoteAddr, &m_uRemoteAddrLen, &uRecvLen) == false) {
 		return false;
 	}
-	m_sBuf[uRecvLen] = 0;
-	DBG_PRINT("Recv data: %s\n", m_sBuf);
+	DBG_PRINT("uRecvLen: %u\n", uRecvLen);
+	return true;
+}
+
+bool SocketIPCServer::Recv(char* sBuf, unsigned int uBufSize)
+{
+	unsigned int uRecvLen;
+	if (SocketUtil::RecvFrom(m_sFD, sBuf, uBufSize, 0, (struct sockaddr*)&m_unRemoteAddr, &m_uRemoteAddrLen, &uRecvLen) == false) {
+		return false;
+	}
+	DBG_PRINT("m_nRemoteAddrLen: %u\n", m_uRemoteAddrLen);
+	DBG_PRINT("uRecvLen: %u\n", uRecvLen);
 	return true;
 }
 
@@ -408,7 +427,7 @@ bool SocketIPCServer::Send(const char *SendData, unsigned int uDataSize)
 	if (SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &nFD) == false) {
 		return false;
 	}
-	if (SocketUtil::Connect(nFD, (struct sockaddr *)&m_unRemoteAddr, m_nRemoteAddrLen) == false) {
+	if (SocketUtil::Connect(nFD, (struct sockaddr *)&m_unRemoteAddr, m_uRemoteAddrLen) == false) {
 		SocketUtil::Close(nFD);
 		return false;
 	}
