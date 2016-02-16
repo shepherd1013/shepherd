@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include "spd_sig_util.h"
 #include "debug.h"
+#include "socket_util.h"
 
 bool SigUtil::Block(int nSigNo)
 {
@@ -16,12 +17,12 @@ bool SigUtil::Block(int nSigNo)
 	int nRet;
 	if (sigaddset(&mask, nSigNo) < 0) {
 		nRet = errno;
-		ERR_PRINT("sigaddset() error:%s!\n", strerror(nRet));
+		ERR_PRINT("sigaddset() error: %s!\n", strerror(nRet));
 		return false;
 	}
 	if (sigprocmask(SIG_BLOCK, &mask, NULL) < 0) {
 		int nRet = errno;
-		ERR_PRINT("sigprocmask() error:%s!\n", strerror(nRet));
+		ERR_PRINT("sigprocmask() error: %s!\n", strerror(nRet));
 		return false;
 	}
 	return true;
@@ -45,14 +46,14 @@ bool SigUtil::Wait(time_t tMS, unsigned int *uSigNo)
 
 	if (sigfillset(&mask) < 0) {
 		nRet = errno;
-		ERR_PRINT("sigfillset() error:%s!\n", strerror(nRet));
+		ERR_PRINT("sigfillset() error: %s!\n", strerror(nRet));
 		return false;
 	}
 
 	nFD = signalfd(-1, &mask, 0);
-	if (nFD == -1) {
+	if (nFD < 0) {
 		nRet = errno;
-		ERR_PRINT("signalfd() error:%s!\n", strerror(nRet));
+		ERR_PRINT("signalfd() error: %s!\n", strerror(nRet));
 		return false;
 	}
 
@@ -66,17 +67,22 @@ bool SigUtil::Wait(time_t tMS, unsigned int *uSigNo)
 
 	nRet = select(nFD + 1, &readfds, NULL, NULL, &tv);
 	if (nRet == 0) { // Timeout
+		SocketUtil::Close(nFD);
 		return false;
 	}
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("select() error:%s!\n", strerror(nRet));
+		ERR_PRINT("select() error: %s!\n", strerror(nRet));
+		SocketUtil::Close(nFD);
 		return false;
 	}
 
 	struct signalfd_siginfo SigInfo;
 	unsigned int uSigInfoSize = sizeof(struct signalfd_siginfo);
 	ssize_t nReadSize = read(nFD, &SigInfo, uSigInfoSize);
+	if (SocketUtil::Close(nFD) == false) {
+		return false;
+	}
 	DBG_PRINT("Read size: %d\n", nReadSize);
 	if (nReadSize != (int)uSigInfoSize) {
 		ERR_PRINT("Invalid size (%d) of reading signal info!\n", nReadSize);
