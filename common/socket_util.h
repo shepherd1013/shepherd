@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <list>
+#include <sys/un.h>
 
 using namespace std;
 
@@ -87,9 +88,12 @@ public:
 
 	bool Wait(time_t tMS);
 	bool Recv();
+	bool Send(const char *SendData, unsigned int uDataSize);
 
 protected:
-	char	m_buffer[2048];
+	char			m_sBuf[2048];
+	sockaddr_un		m_unRemoteAddr;
+	socklen_t		m_nRemoteAddrLen;
 };
 
 class SocketIPCClient: public SocketIPC

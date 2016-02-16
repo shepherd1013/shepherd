@@ -19,7 +19,7 @@ bool SocketUtil::Socket(int domain, int type, int protocol, int *sFD)
 	*sFD = socket(domain, type, protocol);
 	if (*sFD < 0) {
 		*sFD = errno;
-		ERR_PRINT("%s\n", strerror(*sFD));
+		ERR_PRINT("socket() error: %s!\n", strerror(*sFD));
 		return false;
 	}
 	return true;
@@ -31,7 +31,7 @@ bool SocketUtil::Bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen
 	nRet = bind(sockfd, addr, addrlen);
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("%s\n", strerror(nRet));
+		ERR_PRINT("bind() error: %s!\n", strerror(nRet));
 		return false;
 	}
 	return true;
@@ -96,7 +96,7 @@ bool SocketUtil::Connect(int sockfd, const struct sockaddr *addr, socklen_t addr
 	nRet = connect(sockfd, addr, addrlen);
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("%s\n", strerror(nRet));
+		ERR_PRINT("connect() error: %s!\n", strerror(nRet));
 		return false;
 	}
 	return true;
@@ -108,7 +108,7 @@ bool SocketUtil::SetSockOpt(int sockfd, int level, int optname, const void *optv
 	nRet = setsockopt(sockfd, level, optname, optval, optlen);
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("%s\n", strerror(nRet));
+		ERR_PRINT("setsockopt() error: %s!\n", strerror(nRet));
 		return false;
 	}
 	return true;
@@ -120,7 +120,7 @@ bool SocketUtil::GetSocketOpt(int sockfd, int level, int optname, void *optval, 
 	nRet = getsockopt(sockfd, level, optname, optval, optlen);
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("%s\n", strerror(nRet));
+		ERR_PRINT("getsockopt() error: %s!\n", strerror(nRet));
 		return false;
 	}
 	return true;
@@ -133,7 +133,7 @@ bool SocketUtil::Close(int sockfd)
 		nRet = close(sockfd);
 		if (nRet < 0) {
 			nRet = errno;
-			ERR_PRINT("%s\n", strerror(nRet));
+			ERR_PRINT("close() error: %s!\n", strerror(nRet));
 			return false;
 		}
 	}
@@ -168,7 +168,7 @@ bool SocketUtil::Wait(time_t tMS, list<int> sRegisterFD, int* sEventFD)
 
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("%s!\n", strerror(nRet));
+		ERR_PRINT("select() error: %s!\n", strerror(nRet));
 		return false;
 	}
 
@@ -210,7 +210,7 @@ bool SocketUtil::Wait(time_t tMS, vector<int> sRegisterFD, int* sEventFD)
 
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("%s!\n", strerror(nRet));
+		ERR_PRINT("select() error: %s!\n", strerror(nRet));
 		return false;
 	}
 
@@ -229,7 +229,7 @@ bool SocketUtil::RecvFrom(int sockfd, void *buf, size_t len, int flags, struct s
 	int nRet = recvfrom(sockfd, buf, len, 0, RemoteAddr, RemoteAddrLen);
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("%s!\n", strerror(nRet));
+		ERR_PRINT("recvfrom() error: %s!\n", strerror(nRet));
 		return false;
 	}
 	*uRecvDataLen = nRet;
@@ -241,7 +241,7 @@ bool SocketUtil::SendTo(int sockfd, const void *buf, size_t len, int flags, stru
 	int nRet = sendto(sockfd, buf, len, 0, RemoteAddr, RemoteAddrLen);
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("%s!\n", strerror(nRet));
+		ERR_PRINT("SendTo() error: %s!\n", strerror(nRet));
 		return false;
 	}
 
@@ -272,7 +272,7 @@ bool SocketUtil::Listen(int sockfd, int nPendingNum)
 	nRet = listen(sockfd, nPendingNum);
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("%s\n", strerror(nRet));
+		ERR_PRINT("listen() error: %s!\n", strerror(nRet));
 		return false;
 	}
 	return true;
@@ -284,7 +284,7 @@ bool SocketUtil::Accept(int sockfd, struct sockaddr *RemoteAddr, socklen_t *Remo
 	nRet = accept(sockfd, RemoteAddr, RemoteAddrLen);
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("%s\n", strerror(nRet));
+		ERR_PRINT("accept() error: %s!\n", strerror(nRet));
 		return false;
 	}
 	*nAcceptedFD = nRet;
@@ -303,7 +303,7 @@ bool SocketUtil::Send(int sockfd, const void *buf, size_t len, int flags)
 			if (nSndRet < 0) {
 				nSndRet = errno;
 				if (nSndRet != ECONNRESET) {
-					ERR_PRINT("send():%s\n", strerror(nSndRet));
+					ERR_PRINT("send() error: %s!\n", strerror(nSndRet));
 				}
 			} else {
 				DBG_PRINT("Client disconnect!\n");
@@ -353,11 +353,7 @@ SocketIPC::~SocketIPC()
 
 SocketIPCServer::SocketIPCServer(const char* sLocalPath)
 {
-	bool bRet;
-
-	bRet = SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &m_sFD);
-	if (bRet == false) {
-		ERR_PRINT("SocketUtil::Socket() error!\n");
+	if (SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &m_sFD) == false) {
 		return;
 	}
 
@@ -365,7 +361,7 @@ SocketIPCServer::SocketIPCServer(const char* sLocalPath)
 	if ( (nRet < 0) && (errno != ENOENT) ) {
 		nRet = errno;
 		ERR_PRINT("nRet: %d\n", nRet);
-		ERR_PRINT("%s\n", strerror(nRet));
+		ERR_PRINT("unlink() error: %s!\n", strerror(nRet));
 		return;
 	}
 
@@ -375,9 +371,7 @@ SocketIPCServer::SocketIPCServer(const char* sLocalPath)
 	strncpy(un.sun_path, sLocalPath, sizeof(un.sun_path));
 	un.sun_family = AF_UNIX;
 	size = offsetof(struct sockaddr_un, sun_path) + strlen(un.sun_path);
-	bRet = SocketUtil::Bind(m_sFD, (struct sockaddr *)&un, size);
-	if (bRet == false) {
-		ERR_PRINT("SocketUtil::Bind() error!\n");
+	if (SocketUtil::Bind(m_sFD, (struct sockaddr *)&un, size) == false) {
 		return;
 	}
 }
@@ -391,8 +385,7 @@ bool SocketIPCServer::Wait(time_t tMS)
 	vector<int> sRegisterFD;
 	int sEventFD;
 	sRegisterFD.push_back(m_sFD);
-	bool bRet = SocketUtil::Wait(tMS, sRegisterFD, &sEventFD);
-	if (bRet == false) {
+	if (SocketUtil::Wait(tMS, sRegisterFD, &sEventFD) == false) {
 		return false;
 	}
 	return true;
@@ -400,15 +393,32 @@ bool SocketIPCServer::Wait(time_t tMS)
 
 bool SocketIPCServer::Recv()
 {
-	int nRet;
-	nRet = recv(m_sFD, m_buffer, sizeof(m_buffer), 0);
-	if(nRet < 0){
-		nRet = errno;
-		ERR_PRINT("%s\n", strerror(nRet));
+	unsigned int uRecvLen;
+	if (SocketUtil::RecvFrom(m_sFD, m_sBuf, sizeof(m_sBuf), 0, (struct sockaddr *)&m_unRemoteAddr, &m_nRemoteAddrLen, &uRecvLen) == false) {
 		return false;
 	}
-	m_buffer[nRet] = 0;
-	DBG_PRINT("Recv data: %s\n", m_buffer);
+	m_sBuf[uRecvLen] = 0;
+	DBG_PRINT("Recv data: %s\n", m_sBuf);
+	return true;
+}
+
+bool SocketIPCServer::Send(const char *SendData, unsigned int uDataSize)
+{
+	int nFD;
+	if (SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &nFD) == false) {
+		return false;
+	}
+	if (SocketUtil::Connect(nFD, (struct sockaddr *)&m_unRemoteAddr, m_nRemoteAddrLen) == false) {
+		SocketUtil::Close(nFD);
+		return false;
+	}
+	if(SocketUtil::Send(nFD, SendData, uDataSize, 0) == false) {
+		SocketUtil::Close(nFD);
+		return false;
+	}
+	if(SocketUtil::Close(nFD) == false) {
+		return false;
+	}
 	return true;
 }
 
@@ -439,12 +449,8 @@ SocketIPCClient::~SocketIPCClient()
 
 bool SocketIPCClient::Send(const char *SendData, unsigned int uDataSize)
 {
-	int nRet = send(m_sFD, SendData, uDataSize, 0);
-	if(nRet < 0){
-		nRet = errno;
-		ERR_PRINT("%s\n", strerror(nRet));
+	if (SocketUtil::Send(m_sFD, SendData, uDataSize, 0) == false) {
 		return false;
 	}
-	DBG_PRINT("Send data size: %d\n", nRet);
 	return true;
 }
