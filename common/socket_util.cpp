@@ -416,7 +416,6 @@ bool SocketIPCServer::Recv(char* sBuf, unsigned int uBufSize)
 	if (SocketUtil::RecvFrom(m_sFD, sBuf, uBufSize, 0, (struct sockaddr*)&m_unRemoteAddr, &m_uRemoteAddrLen, &uRecvLen) == false) {
 		return false;
 	}
-	DBG_PRINT("m_nRemoteAddrLen: %u\n", m_uRemoteAddrLen);
 	DBG_PRINT("uRecvLen: %u\n", uRecvLen);
 	return true;
 }

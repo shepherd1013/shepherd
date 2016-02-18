@@ -39,27 +39,42 @@ bool FileUtil::Close(FILE *fp)
 
 bool FileUtil::Write(const void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile)
 {
-	size_t nRet = fwrite(pData, uDataSize, uNumElement, pFile);
-	DBG_PRINT("nRet: %u\n", nRet);
-	if ( (nRet == 0) || (nRet != (uDataSize * uNumElement)) ) {
-		ERR_PRINT("fwrite() error!\n");
+	size_t uRet = fwrite(pData, uDataSize, uNumElement, pFile);
+//	DBG_PRINT("Write size: %u\n", uRet);
+	if (uRet == 0) {
 		return false;
+	}
+	if (uRet < (uDataSize * uNumElement)) {
+		int nRet = feof(pFile);
+		if (nRet <= 0) {
+			nRet = errno;
+			ERR_PRINT("fwrite() error: %s!\n", strerror(nRet));
+			return false;
+		}
 	}
 	return true;
 }
 
-bool FileUtil::Read(void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile)
+bool FileUtil::Read(void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile, unsigned int *uReadSize)
 {
-	size_t nRet = fread(pData, uDataSize, uNumElement, pFile);
-	DBG_PRINT("nRet: %u\n", nRet);
-	if ( (nRet == 0) || (nRet != (uDataSize * uNumElement)) ) {
-		ERR_PRINT("fwrite() error!\n");
+	size_t uRet = fread(pData, uDataSize, uNumElement, pFile);
+//	DBG_PRINT("Read size: %u\n", uRet);
+	if (uRet == 0) {
 		return false;
 	}
+	if (uRet < (uDataSize * uNumElement)) {
+		int nRet = feof(pFile);
+		if (nRet <= 0) {
+			nRet = errno;
+			ERR_PRINT("fread() error: %s!\n", strerror(nRet));
+			return false;
+		}
+	}
+	*uReadSize = uRet;
 	return true;
 }
 
-bool FileUtil::GetFileSize(const char *filename, long int *pSize)
+bool FileUtil::GetFileSize(const char *filename, long unsigned int *pSize)
 {
 	struct stat stFileStat;
 	int nRet = stat(filename, &stFileStat);
@@ -100,13 +115,15 @@ bool FileUtil::GetFileModTime(const char *filename, struct timespec *pTime)
 	return true;
 }
 
-File::File(const char *sFilePath)
+File::File()
+:fpFile(NULL)
 {
-	fpFile = FileUtil::Open(sFilePath, "r+");
-	if (fpFile == NULL) {
-		ERR_PRINT("FileUtil::Open() error!\n");
-		return;
-	}
+}
+
+File::File(const char *sFilePath)
+:fpFile(NULL)
+{
+	this->Load(sFilePath);
 }
 
 File::~File()
@@ -117,10 +134,26 @@ File::~File()
 	}
 }
 
-bool File::Read(void *pData, size_t uDataSize, size_t uNumElement)
+bool File::Load(const char *sFilePath)
 {
-	if (FileUtil::Read(pData, uDataSize, uNumElement, fpFile) == false ) {
-		ERR_PRINT("FileUtil::Read() error!\n");
+	m_sFilePath = sFilePath;
+	if(FileUtil::Close(fpFile) == false) {
+		ERR_PRINT("FileUtil::Close() error!\n");
+		return false;
+	}
+	return true;
+}
+
+bool File::Read(void *pData, size_t uDataSize, size_t uNumElement, unsigned int *uReadSize)
+{
+	if (fpFile == NULL) {
+		fpFile = FileUtil::Open(m_sFilePath, "r+");
+		if (fpFile == NULL) {
+			ERR_PRINT("FileUtil::Open() error!\n");
+			return false;
+		}
+	}
+	if (FileUtil::Read(pData, uDataSize, uNumElement, fpFile, uReadSize) == false) {
 		return false;
 	}
 	return true;
@@ -128,6 +161,13 @@ bool File::Read(void *pData, size_t uDataSize, size_t uNumElement)
 
 bool File::Write(const void *pData, size_t uDataSize, size_t uNumElement)
 {
+	if (fpFile == NULL) {
+		fpFile = FileUtil::Open(m_sFilePath, "w+");
+		if (fpFile == NULL) {
+			ERR_PRINT("FileUtil::Open() error!\n");
+			return false;
+		}
+	}
 	if (FileUtil::Write(pData, uDataSize, uNumElement, fpFile) == false ) {
 		ERR_PRINT("FileUtil::Write() error!\n");
 		return false;
