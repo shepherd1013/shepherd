@@ -18,10 +18,12 @@ public:
 	bool Load(const char *sFilePath);
 	bool Read(void *pData, size_t uDataSize, size_t uNumElement, unsigned int *uReadSize);
 	bool Write(const void *pData, size_t uDataSize, size_t uNumElement);
+	bool AppendFile(const char* sFile);
+	bool IsFileExisting();
 
 protected:
-	const char* m_sFilePath;
-	FILE *fpFile;
+	const char*	m_sFilePath;
+	FILE*			m_fpFile;
 };
 
 class FileUtil
@@ -34,6 +36,8 @@ public:
 	static bool GetFileSize(const char *filename, long unsigned int *pSize);
 	static bool GetFileAccessTime(const char *filename, struct timespec *pTime);
 	static bool GetFileModTime(const char *filename, struct timespec *pTime);
+	static bool CopyFile(const char* sSrc, const char* sDest);
+	static bool CopyFile(FILE *fpSrc, FILE *fpDst);
 };
 
 

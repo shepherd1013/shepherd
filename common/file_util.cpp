@@ -40,17 +40,10 @@ bool FileUtil::Close(FILE *fp)
 bool FileUtil::Write(const void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile)
 {
 	size_t uRet = fwrite(pData, uDataSize, uNumElement, pFile);
-//	DBG_PRINT("Write size: %u\n", uRet);
-	if (uRet == 0) {
+	DBG_PRINT("Write size: %u\n", uRet);
+	if (uRet != (uDataSize * uNumElement)) {
+		ERR_PRINT("fwrite() error!\n");
 		return false;
-	}
-	if (uRet < (uDataSize * uNumElement)) {
-		int nRet = feof(pFile);
-		if (nRet <= 0) {
-			nRet = errno;
-			ERR_PRINT("fwrite() error: %s!\n", strerror(nRet));
-			return false;
-		}
 	}
 	return true;
 }
@@ -58,11 +51,9 @@ bool FileUtil::Write(const void *pData, size_t uDataSize, size_t uNumElement, FI
 bool FileUtil::Read(void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile, unsigned int *uReadSize)
 {
 	size_t uRet = fread(pData, uDataSize, uNumElement, pFile);
-//	DBG_PRINT("Read size: %u\n", uRet);
+	DBG_PRINT("Read size: %u\n", uRet);
+	*uReadSize = uRet;
 	if (uRet == 0) {
-		return false;
-	}
-	if (uRet < (uDataSize * uNumElement)) {
 		int nRet = feof(pFile);
 		if (nRet <= 0) {
 			nRet = errno;
@@ -70,7 +61,6 @@ bool FileUtil::Read(void *pData, size_t uDataSize, size_t uNumElement, FILE *pFi
 			return false;
 		}
 	}
-	*uReadSize = uRet;
 	return true;
 }
 
@@ -115,20 +105,58 @@ bool FileUtil::GetFileModTime(const char *filename, struct timespec *pTime)
 	return true;
 }
 
+bool FileUtil::CopyFile(const char* sSrc, const char* sDest)
+{
+	File Src(sSrc);
+	File Dest(sDest);
+	const unsigned int uBufSize = 4096;
+	char sBuf[uBufSize] = {0};
+	unsigned int uReadSize = 0;
+	do {
+		if (Src.Read(sBuf, 1, uBufSize, &uReadSize) == false) {
+			return false;
+		}
+		if (uReadSize) {
+			if (Dest.Write(&sBuf, 1, uReadSize) == false) {
+				return false;
+			}
+		}
+	} while(uReadSize);
+	return true;
+}
+
+bool FileUtil::CopyFile(FILE *fpSrc, FILE *fpDst)
+{
+	const unsigned int uBufSize = 4096;
+	char sBuf[uBufSize] = {0};
+	unsigned int uReadSize = 0;
+	do {
+		if (FileUtil::Read(sBuf, 1, uBufSize, fpSrc, &uReadSize) == false) {
+			return false;
+		}
+		if (uReadSize) {
+			if (FileUtil::Write(&sBuf, 1, uReadSize, fpDst) == false) {
+				return false;
+			}
+		}
+	} while(uReadSize);
+	return true;
+}
+
 File::File()
-:fpFile(NULL)
+:m_fpFile(NULL)
 {
 }
 
 File::File(const char *sFilePath)
-:fpFile(NULL)
+:m_fpFile(NULL)
 {
 	this->Load(sFilePath);
 }
 
 File::~File()
 {
-	if(FileUtil::Close(fpFile) == false) {
+	if(FileUtil::Close(m_fpFile) == false) {
 		ERR_PRINT("FileUtil::Close() error!\n");
 		return;
 	}
@@ -137,7 +165,7 @@ File::~File()
 bool File::Load(const char *sFilePath)
 {
 	m_sFilePath = sFilePath;
-	if(FileUtil::Close(fpFile) == false) {
+	if(FileUtil::Close(m_fpFile) == false) {
 		ERR_PRINT("FileUtil::Close() error!\n");
 		return false;
 	}
@@ -146,14 +174,15 @@ bool File::Load(const char *sFilePath)
 
 bool File::Read(void *pData, size_t uDataSize, size_t uNumElement, unsigned int *uReadSize)
 {
-	if (fpFile == NULL) {
-		fpFile = FileUtil::Open(m_sFilePath, "r+");
-		if (fpFile == NULL) {
+	if (m_fpFile == NULL) {
+		m_fpFile = FileUtil::Open(m_sFilePath, "r+");
+		if (m_fpFile == NULL) {
 			ERR_PRINT("FileUtil::Open() error!\n");
 			return false;
 		}
 	}
-	if (FileUtil::Read(pData, uDataSize, uNumElement, fpFile, uReadSize) == false) {
+	if (FileUtil::Read(pData, uDataSize, uNumElement, m_fpFile, uReadSize) == false) {
+		ERR_PRINT("FileUtil::Read() error!\n");
 		return false;
 	}
 	return true;
@@ -161,15 +190,42 @@ bool File::Read(void *pData, size_t uDataSize, size_t uNumElement, unsigned int 
 
 bool File::Write(const void *pData, size_t uDataSize, size_t uNumElement)
 {
-	if (fpFile == NULL) {
-		fpFile = FileUtil::Open(m_sFilePath, "w+");
-		if (fpFile == NULL) {
+	if (m_fpFile == NULL) {
+		m_fpFile = FileUtil::Open(m_sFilePath, "w+");
+		if (m_fpFile == NULL) {
 			ERR_PRINT("FileUtil::Open() error!\n");
 			return false;
 		}
 	}
-	if (FileUtil::Write(pData, uDataSize, uNumElement, fpFile) == false ) {
+	if (FileUtil::Write(pData, uDataSize, uNumElement, m_fpFile) == false ) {
 		ERR_PRINT("FileUtil::Write() error!\n");
+		return false;
+	}
+	return true;
+}
+
+bool File::AppendFile(const char* sFile)
+{
+	File file(sFile);
+	const unsigned int uBufSize = 4096;
+	char sBuf[uBufSize] = {0};
+	unsigned int uReadSize = 0;
+	do {
+		if (file.Read(sBuf, 1, uBufSize, &uReadSize) == false) {
+			return false;
+		}
+		if (uReadSize) {
+			if (this->Write(&sBuf, 1, uReadSize) == false) {
+				return false;
+			}
+		}
+	} while(uReadSize);
+	return true;
+}
+
+bool File::IsFileExisting()
+{
+	if (fopen(m_sFilePath, "r") == NULL) {
 		return false;
 	}
 	return true;
