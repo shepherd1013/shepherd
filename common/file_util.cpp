@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "debug.h"
 
 FILE* FileUtil::Open(const char *sFilename, const char *sMode)
@@ -30,7 +31,7 @@ bool FileUtil::Close(FILE *fp)
 		int nRet = fclose(fp);
 		if (nRet != 0) {
 			nRet = errno;
-			ERR_PRINT("%s\n", strerror(nRet));
+			ERR_PRINT("fclose() error: %s!\n", strerror(nRet));
 			return false;
 		}
 	}
@@ -144,28 +145,31 @@ bool FileUtil::CopyFile(FILE *fpSrc, FILE *fpDst)
 }
 
 File::File()
-:m_fpFile(NULL)
+:m_fp(NULL)
 {
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
 }
 
 File::File(const char *sFilePath)
-:m_fpFile(NULL)
+:m_fp(NULL)
 {
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
 	this->Load(sFilePath);
 }
 
 File::~File()
 {
-	if(FileUtil::Close(m_fpFile) == false) {
+	if(FileUtil::Close(m_fp) == false) {
 		ERR_PRINT("FileUtil::Close() error!\n");
 		return;
 	}
+	sync();
 }
 
 bool File::Load(const char *sFilePath)
 {
 	m_sFilePath = sFilePath;
-	if(FileUtil::Close(m_fpFile) == false) {
+	if(FileUtil::Close(m_fp) == false) {
 		ERR_PRINT("FileUtil::Close() error!\n");
 		return false;
 	}
@@ -174,14 +178,14 @@ bool File::Load(const char *sFilePath)
 
 bool File::Read(void *pData, size_t uDataSize, size_t uNumElement, unsigned int *uReadSize)
 {
-	if (m_fpFile == NULL) {
-		m_fpFile = FileUtil::Open(m_sFilePath, "r+");
-		if (m_fpFile == NULL) {
+	if (m_fp == NULL) {
+		m_fp = FileUtil::Open(m_sFilePath, "r+");
+		if (m_fp == NULL) {
 			ERR_PRINT("FileUtil::Open() error!\n");
 			return false;
 		}
 	}
-	if (FileUtil::Read(pData, uDataSize, uNumElement, m_fpFile, uReadSize) == false) {
+	if (FileUtil::Read(pData, uDataSize, uNumElement, m_fp, uReadSize) == false) {
 		ERR_PRINT("FileUtil::Read() error!\n");
 		return false;
 	}
@@ -190,14 +194,14 @@ bool File::Read(void *pData, size_t uDataSize, size_t uNumElement, unsigned int 
 
 bool File::Write(const void *pData, size_t uDataSize, size_t uNumElement)
 {
-	if (m_fpFile == NULL) {
-		m_fpFile = FileUtil::Open(m_sFilePath, "w+");
-		if (m_fpFile == NULL) {
+	if (m_fp == NULL) {
+		m_fp = FileUtil::Open(m_sFilePath, "w+");
+		if (m_fp == NULL) {
 			ERR_PRINT("FileUtil::Open() error!\n");
 			return false;
 		}
 	}
-	if (FileUtil::Write(pData, uDataSize, uNumElement, m_fpFile) == false ) {
+	if (FileUtil::Write(pData, uDataSize, uNumElement, m_fp) == false ) {
 		ERR_PRINT("FileUtil::Write() error!\n");
 		return false;
 	}
@@ -229,4 +233,60 @@ bool File::IsFileExisting()
 		return false;
 	}
 	return true;
+}
+
+bool File::ReadLine(char *sLine, unsigned int uLineSize)
+{
+	if (m_fp == NULL) {
+		m_fp = FileUtil::Open(m_sFilePath, "r+");
+		if (m_fp == NULL) {
+			ERR_PRINT("FileUtil::Open() error!\n");
+			return false;
+		}
+	}
+	if (fgets(sLine, uLineSize, m_fp) == NULL) {
+		int nRet = errno;
+		if (nRet != 0) {
+			ERR_PRINT("fgets() error: %s!\n", strerror(nRet));
+			return false;
+		}
+	}
+	unsigned int uLineLen = strlen(sLine);
+	if (uLineLen > 0) {
+		sLine[uLineLen - 1] = 0;
+	}
+
+	return true;
+}
+
+bool File::IsEOF()
+{
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+	if (m_fp == NULL) {
+		m_fp = FileUtil::Open(m_sFilePath, "r+");
+		if (m_fp == NULL) {
+			ERR_PRINT("FileUtil::Open() error!\n");
+			return false;
+		}
+	}
+
+	if (m_fp == NULL) {
+		DBG_PRINT("m_fpFile is NULL!\n");
+	}
+	//Hint: 0:Not EOF, 1:EOF, <0:Error
+	int nRet = feof(m_fp);
+	if (nRet == 0) {
+		return false;
+	}
+	else if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("feof() error: %s!\n", strerror(nRet));
+		return false;
+	}
+	return true;
+}
+
+FILE* File::GetFD()
+{
+	return m_fp;
 }

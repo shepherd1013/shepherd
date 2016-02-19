@@ -20,10 +20,13 @@ public:
 	bool Write(const void *pData, size_t uDataSize, size_t uNumElement);
 	bool AppendFile(const char* sFile);
 	bool IsFileExisting();
+	bool ReadLine(char *sLine, unsigned int uLineSize);
+	bool IsEOF();
+	FILE* GetFD();
 
 protected:
 	const char*	m_sFilePath;
-	FILE*			m_fpFile;
+	FILE*			m_fp;
 };
 
 class FileUtil

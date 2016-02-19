@@ -334,7 +334,7 @@ Socket::Socket()
 
 Socket::~Socket()
 {
-	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
 	bool bRet = SocketUtil::Close(m_sFD);
 	if (bRet == false) {
 		ERR_PRINT("SocketUtil::Close() error!\n");

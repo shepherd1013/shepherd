@@ -15,7 +15,7 @@ FileParser::FileParser(const char *sFilename)
 	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
 	fFd = FileUtil::Open(sFilename, "r");
 	if (fFd == NULL) {
-		ERR_PRINT("File::Open(%s) error!\n",sFilename);
+		ERR_PRINT("FileUtil::Open(%s) error!\n",sFilename);
 		assert(0);
 //		return;
 	}
@@ -79,50 +79,123 @@ bool FileParser::ReadLineWithToken(char *sLine, unsigned int uLineSize, const ch
 	return true;
 }
 
-IniFileParser::~IniFileParser()
+IniFileParser::IniFileParser()
 {
-	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
 }
 
-bool IniFileParser::GetKeyValue(const char *sKey, char *sValue, unsigned int uValueSize)
+IniFileParser::IniFileParser(const char* sIniFile): File(sIniFile)
 {
-	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
-	bool bRet = false;
-	char sLine[256] = {0};
-	char *pChar = NULL;
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+	this->LoadFile(sIniFile);
+}
 
-	if (sKey == NULL) {
-		ERR_PRINT("sKey is NULL!\n");
-		return false;
-	}
+IniFileParser::~IniFileParser()
+{
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+}
 
-	if (sValue == NULL) {
-		ERR_PRINT("sValue is NULL!\n");
-		return false;
-	}
-
-	while (true) {
-		bRet = this->ReadLine(sLine, sizeof(sLine));
-		if (bRet == false) {
-			ERR_PRINT("this->ReadLine() error!\n");
+bool IniFileParser::LoadFile(const char* sIniFile)
+{
+	const char* sKey = NULL;
+	const char* sVal = NULL;
+	char* pSave;
+	KeyValMap.clear();
+	do {
+		if (this->ReadLine(sBuf, sizeof(sBuf)) == false) {
 			return false;
 		}
+		if (this->IsEOF()) {
+			break;
+		}
+		if (strlen(sBuf) == 0) {
+			continue;
+		}
+		sKey = strtok_r(sBuf, " =", &pSave);
+		if (sKey == NULL) {
+			continue;
+		}
+		sVal = strtok_r(NULL, " =", &pSave);
+		if (sVal == NULL) {
+			continue;
+		}
+		KeyValMap.insert(pair<string, string>(sKey, sVal));
+	} while (true);
 
-		pChar = strtok(sLine, " =");
-		if(pChar == NULL) {
-			continue;
-		}
-		DBG_PRINT("pChar: %s\n", pChar);
-		if (strncmp(pChar, sKey, strlen(pChar)) != 0) {
-			continue;
-		}
-		pChar = strtok(NULL, " =");
-		if(pChar == NULL) {
-			continue;
-		}
-		DBG_PRINT("pChar: %s\n", pChar);
-		strncpy(sValue, pChar, uValueSize);
-		break;
+	return true;
+}
+
+const char* IniFileParser::GetKeyValue(const char *sKey)
+{
+	if (sKey == NULL) {
+		ERR_PRINT("The key is NULL!\n");
+		return NULL;
+	}
+	map<string, string>::iterator it = KeyValMap.find(sKey);
+	if (it == KeyValMap.end()) {
+		return NULL;
+	}
+	return it->second.c_str();
+}
+
+bool IniFileParser::SaveFile()
+{
+#if 1
+	bool bRet = FileUtil::Close(m_fp);
+	if (bRet == false) {
+		ERR_PRINT("FileUtil::Close() error!\n");
+		return false;
+	}
+
+	m_fp = FileUtil::Open(m_sFilePath, "w+");
+	if (m_fp == NULL) {
+		ERR_PRINT("FileUtil::Open() error!\n");
+		return false;
+	}
+
+#else
+	int nRet = fseek(m_fp, 0, SEEK_SET);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("fseek() error: %s!\n", strerror(nRet));
+		return false;
+	}
+	nRet = fflush(m_fp);
+	if (nRet == EOF) {
+		nRet = errno;
+		ERR_PRINT("fflush() error: %s!\n", strerror(nRet));
+		return false;
+	}
+	__fpurge(m_fp);
+#endif
+	for (map<string, string>::iterator it = KeyValMap.begin(); it != KeyValMap.end(); it++) {
+		fprintf(m_fp, "%s = %s\n", it->first.c_str(), it->second.c_str());
 	}
 	return true;
+}
+
+bool IniFileParser::SetKeyValue(const char* sKey, const char* sVal)
+{
+	if (sKey == NULL || sVal == NULL) {
+		ERR_PRINT("The key or value is NULL!\n");
+		return false;
+	}
+	map<string, string>::iterator it = KeyValMap.find(sKey);
+	if (it != KeyValMap.end()) { //The find matched
+		KeyValMap[sKey] = sVal;
+	} else {
+		KeyValMap.insert(pair<string, string>(sKey, sVal));
+	}
+	return true;
+}
+
+void IniFileParser::ShowKeyValue()
+{
+	if (KeyValMap.empty()) {
+		return;
+	}
+	DBG_PRINT("Show key and value table:\n");
+	for (map<string, string>::iterator it = KeyValMap.begin(); it != KeyValMap.end(); it++) {
+		printf("Key:%s, Value:%s\n", it->first.c_str(), it->second.c_str());
+	}
 }

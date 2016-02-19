@@ -7,7 +7,13 @@
 
 #ifndef FILE_PARSER_H_
 #define FILE_PARSER_H_
+
 #include <stdio.h>
+#include <string>
+#include <map>
+#include "file_util.h"
+
+using namespace std;
 
 class FileParser
 {
@@ -22,13 +28,21 @@ protected:
 	FILE *fFd;
 };
 
-class IniFileParser: public FileParser
+class IniFileParser: public File
 {
 public:
-	IniFileParser(const char *sFilename) : FileParser(sFilename){};
+	IniFileParser();
+	IniFileParser(const char *sIniFile);
 	virtual ~IniFileParser();
 
-	bool GetKeyValue(const char *sKey, char *sValue, unsigned int uValueSize);
+	bool LoadFile(const char* sIniFile);
+	bool SaveFile();
+	const char* GetKeyValue(const char* sKey);
+	bool SetKeyValue(const char* sKey, const char* sVal);
+	void ShowKeyValue();
+private:
+	char sBuf[4096];
+	map<string, string> KeyValMap;
 };
 
 
