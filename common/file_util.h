@@ -23,6 +23,7 @@ public:
 	bool ReadLine(char *sLine, unsigned int uLineSize);
 	bool IsEOF();
 	FILE* GetFD();
+	bool Close();
 
 protected:
 	const char*	m_sFilePath;

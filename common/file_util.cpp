@@ -159,17 +159,17 @@ File::File(const char *sFilePath)
 
 File::~File()
 {
-	if(FileUtil::Close(m_fp) == false) {
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+	if (FileUtil::Close(m_fp) == false) {
 		ERR_PRINT("FileUtil::Close() error!\n");
 		return;
 	}
-	sync();
 }
 
 bool File::Load(const char *sFilePath)
 {
 	m_sFilePath = sFilePath;
-	if(FileUtil::Close(m_fp) == false) {
+	if (FileUtil::Close(m_fp) == false) {
 		ERR_PRINT("FileUtil::Close() error!\n");
 		return false;
 	}
@@ -246,6 +246,9 @@ bool File::ReadLine(char *sLine, unsigned int uLineSize)
 	}
 	if (fgets(sLine, uLineSize, m_fp) == NULL) {
 		int nRet = errno;
+		if (this->IsEOF()) {
+			return true;
+		}
 		if (nRet != 0) {
 			ERR_PRINT("fgets() error: %s!\n", strerror(nRet));
 			return false;
@@ -289,4 +292,15 @@ bool File::IsEOF()
 FILE* File::GetFD()
 {
 	return m_fp;
+}
+
+bool File::Close()
+{
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+	if (FileUtil::Close(m_fp) == false) {
+		ERR_PRINT("FileUtil::Close() error!\n");
+		return false;
+	}
+	m_fp = NULL;
+	return true;
 }
