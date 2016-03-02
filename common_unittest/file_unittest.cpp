@@ -71,7 +71,7 @@ bool FileUnittest::TestIniFileParser()
 	IniFileParser parser("test.ini");
 	char sValue[128] = {0};
 	const char *sKey = "IPC.Local.Path";
-	if(parser.GetKeyValue(sKey, sValue, sizeof(sValue)) == false) {
+	if(parser.GetKeyValue(sKey) == NULL) {
 		ERR_PRINT("parser.GetKeyValue(%s) error!\n", sKey);
 		return false;
 	}
@@ -99,8 +99,9 @@ bool FileUnittest::TestFileRead()
 	const char *sFileName = "test.txt";
 	File file(sFileName);
 	char sData[64] = {0};
+	unsigned int uReadSize = 0;
 
-	if(file.Read(sData, 1, sizeof(sData)) == false) {
+	if(file.Read(sData, sizeof(sData), 1, &uReadSize) == false) {
 		ERR_PRINT("file.Read() error!\n");
 		return false;
 	}
@@ -111,7 +112,7 @@ bool FileUnittest::TestFileRead()
 bool FileUnittest::TestGetFileSize()
 {
 	const char *sFileName = "test.txt";
-	long int lFileSize;
+	unsigned long int lFileSize;
 	if (FileUtil::GetFileSize(sFileName, &lFileSize) == false) {
 		ERR_PRINT("FileUtil::GetFileSize() error!\n");
 		return false;

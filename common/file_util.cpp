@@ -181,7 +181,7 @@ bool File::Read(void *pData, size_t uDataSize, size_t uNumElement, unsigned int 
 	if (m_fp == NULL) {
 		m_fp = FileUtil::Open(m_sFilePath, "r+");
 		if (m_fp == NULL) {
-			ERR_PRINT("FileUtil::Open() error!\n");
+			ERR_PRINT("FileUtil::Open(%s) error!\n", m_sFilePath);
 			return false;
 		}
 	}

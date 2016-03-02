@@ -11,8 +11,8 @@
 void Unittest::Run()
 {
 	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
-	FileUnittest cFiletest;
-	cFiletest.Run();
+	FileUnittest Filetest;
+	Filetest.Run();
 }
 
 

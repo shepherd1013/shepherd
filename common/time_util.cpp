@@ -14,7 +14,7 @@ bool TimeUtil::GetUptime(struct timespec *tTime)
 	int nRet = clock_gettime(CLOCK_MONOTONIC, tTime);
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("%s\n", strerror(nRet));
+		ERR_PRINT("clock_gettime() error: %s\n", strerror(nRet));
 		return false;
 	}
 	return true;
