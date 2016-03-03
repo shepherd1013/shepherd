@@ -7,12 +7,15 @@
 #include "common_unittest.h"
 #include "debug.h"
 #include "file_unittest.h"
+#include "spd_msgq_utest.h"
 
 void Unittest::Run()
 {
-	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
-	FileUnittest Filetest;
-	Filetest.Run();
+//	FileUnittest Filetest;
+//	Filetest.Run();
+
+	MsgQUTest MQtest;
+	MQtest.Run();
 }
 
 
