@@ -7,7 +7,7 @@
 
 #include "debug.h"
 
-enum DebugLevel eDebugLevel = DBG_LEVEL_NONE;
+enum DebugLevel eDebugLevel = DBG_LEVEL_ERROR;
 
 void SetDebugLevel(enum DebugLevel eLevel)
 {

@@ -31,14 +31,14 @@ MsgQ::~MsgQ()
 	}
 }
 
-MsgQ::MsgQ(unsigned int uKey, bool bCreation)
+MsgQ::MsgQ(int nKey, bool bCreation)
 {
 	DBG_PRINT("Run %s()...\n", __FUNCTION__);
 	m_bCreation = bCreation;
-	m_nKey = uKey;
+	m_nKey = nKey;
 	if (bCreation) {
-		if (this->LoadKey(uKey) == false) {
-			ERR_PRINT("Load key (0x%x) failed!\n", uKey);
+		if (this->LoadKey(nKey) == false) {
+			ERR_PRINT("Load key (0x%x) failed!\n", nKey);
 			return;
 		}
 	} else {
@@ -49,9 +49,9 @@ MsgQ::MsgQ(unsigned int uKey, bool bCreation)
 	}
 }
 
-bool MsgQ::LoadKey(unsigned int uKey)
+bool MsgQ::LoadKey(int nKey)
 {
-	m_nID = msgget(uKey, IPC_CREAT | IPC_EXCL | 0666);
+	m_nID = msgget(nKey, IPC_CREAT | IPC_EXCL | 0666);
 	if (m_nID < 0) {
 		m_nID = errno;
 		ERR_PRINT("msgget() error: %s!\n", strerror(m_nID));

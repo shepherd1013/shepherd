@@ -13,10 +13,10 @@ class MsgQ
 {
 public:
 	MsgQ();
-	MsgQ(unsigned int uKey, bool bCreation);
+	MsgQ(int uKey, bool bCreation);
 	~MsgQ();
 
-	bool LoadKey(unsigned int uKey);
+	bool LoadKey(int uKey);
 	bool Connect();
 	bool Send(const char* sSndData, unsigned int uDataSize, unsigned int uTimeoutMS);
 	bool Recv(char* sRecvBuf, unsigned int uBufSize, unsigned int* uRecvSize);
