@@ -19,3 +19,24 @@ bool TimeUtil::GetUptime(struct timespec *tTime)
 	}
 	return true;
 }
+
+struct timespec TimeUtil::TimeDiff(struct timespec tTimeA, struct timespec tTimeB)
+{
+	struct timespec tTime;
+	long int nNanoSecDiff;
+	if (tTimeA.tv_sec >= tTimeB.tv_sec) {
+		tTime.tv_sec = tTimeA.tv_sec - tTimeB.tv_sec;
+		nNanoSecDiff = tTimeA.tv_nsec - tTimeB.tv_nsec;
+	} else {
+		tTime.tv_sec = tTimeB.tv_sec - tTimeA.tv_sec;
+		nNanoSecDiff = tTimeB.tv_nsec - tTimeA.tv_nsec;
+	}
+	if (nNanoSecDiff < 0) {
+		tTime.tv_sec--;
+		tTime.tv_nsec = 1000000000 + nNanoSecDiff;
+	} else {
+		tTime.tv_nsec = nNanoSecDiff;
+	}
+//	DBG_PRINT("Time diff: %ld.%ld\n", tTime.tv_sec, tTime.tv_nsec);
+	return tTime;
+}

@@ -19,7 +19,7 @@ public:
 		long     tv_nsec;       //	nanoseconds
 	};
 */
-
+	static struct timespec TimeDiff(struct timespec tTimeA, struct timespec tTimeB);
 };
 
 
