@@ -41,7 +41,7 @@ bool FileUtil::Close(FILE *fp)
 bool FileUtil::Write(const void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile)
 {
 	size_t uRet = fwrite(pData, uDataSize, uNumElement, pFile);
-	DBG_PRINT("Write size: %u\n", uRet);
+//	DBG_PRINT("Write size: %u\n", uRet);
 	if (uRet != (uDataSize * uNumElement)) {
 		ERR_PRINT("fwrite() error!\n");
 		return false;
@@ -52,11 +52,12 @@ bool FileUtil::Write(const void *pData, size_t uDataSize, size_t uNumElement, FI
 bool FileUtil::Read(void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile, unsigned int *uReadSize)
 {
 	size_t uRet = fread(pData, uDataSize, uNumElement, pFile);
-	DBG_PRINT("Read size: %u\n", uRet);
+//	DBG_PRINT("Read size: %u\n", uRet);
 	*uReadSize = uRet;
 	if (uRet == 0) {
 		int nRet = feof(pFile);
-		if (nRet <= 0) {
+//		DBG_PRINT("feof() result: %d\n", nRet);
+		if (nRet < 0) {
 			nRet = errno;
 			ERR_PRINT("fread() error: %s!\n", strerror(nRet));
 			return false;

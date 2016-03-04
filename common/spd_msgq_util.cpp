@@ -15,12 +15,12 @@
 MsgQ::MsgQ()
 :m_nKey(-1)
 {
-	DBG_PRINT("Run %s()...\n", __FUNCTION__);
+//	DBG_PRINT("Run %s()...\n", __FUNCTION__);
 }
 
 MsgQ::~MsgQ()
 {
-	DBG_PRINT("Run %s()...\n", __FUNCTION__);
+//	DBG_PRINT("Run %s()...\n", __FUNCTION__);
 	if (m_bCreation) {
 		int nRet = msgctl(m_nID, IPC_RMID, NULL);
 		if (nRet < 0) {
@@ -33,7 +33,7 @@ MsgQ::~MsgQ()
 
 MsgQ::MsgQ(int nKey, bool bCreation)
 {
-	DBG_PRINT("Run %s()...\n", __FUNCTION__);
+//	DBG_PRINT("Run %s()...\n", __FUNCTION__);
 	m_bCreation = bCreation;
 	m_nKey = nKey;
 	if (bCreation) {
