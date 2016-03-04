@@ -236,7 +236,7 @@ bool File::IsFileExisting()
 	return true;
 }
 
-bool File::ReadLine(char *sLine, unsigned int uLineSize)
+bool File::ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize)
 {
 	if (m_fp == NULL) {
 		m_fp = FileUtil::Open(m_sFilePath, "r+");
@@ -255,9 +255,11 @@ bool File::ReadLine(char *sLine, unsigned int uLineSize)
 			return false;
 		}
 	}
-	unsigned int uLineLen = strlen(sLine);
-	if (uLineLen > 0) {
-		sLine[uLineLen - 1] = 0;
+	*pReadSize = strlen(sLine);
+	if (*pReadSize > 0) {
+		if (sLine[*pReadSize - 1] == '\n') {
+			sLine[*pReadSize - 1] = 0;
+		}
 	}
 
 	return true;

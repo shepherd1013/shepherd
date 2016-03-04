@@ -356,22 +356,31 @@ SocketIPC::~SocketIPC()
 }
 
 SocketIPCServer::SocketIPCServer()
+:m_uRemoteAddrLen(sizeof(m_unRemoteAddr))
 {
 }
 
 SocketIPCServer::SocketIPCServer(const char* sLocalPath)
 :m_uRemoteAddrLen(sizeof(m_unRemoteAddr))
 {
+	this->Connect(sLocalPath);
+}
+
+SocketIPCServer::~SocketIPCServer()
+{
+}
+
+bool SocketIPCServer::Connect(const char *sLocalPath)
+{
 	if (SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &m_sFD) == false) {
-		return;
+		return false;
 	}
 
 	int nRet = unlink(sLocalPath);
 	if ( (nRet < 0) && (errno != ENOENT) ) {
 		nRet = errno;
-		ERR_PRINT("nRet: %d\n", nRet);
-		ERR_PRINT("unlink() error: %s!\n", strerror(nRet));
-		return;
+		ERR_PRINT("unlink() error: %s! errno: %d\n", strerror(nRet), nRet);
+		return false;
 	}
 
 	int size;
@@ -381,12 +390,9 @@ SocketIPCServer::SocketIPCServer(const char* sLocalPath)
 	un.sun_family = AF_UNIX;
 	size = offsetof(struct sockaddr_un, sun_path) + strlen(un.sun_path);
 	if (SocketUtil::Bind(m_sFD, (struct sockaddr *)&un, size) == false) {
-		return;
+		return false;
 	}
-}
-
-SocketIPCServer::~SocketIPCServer()
-{
+	return true;
 }
 
 bool SocketIPCServer::Wait(time_t tMS)

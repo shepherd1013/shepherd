@@ -16,20 +16,23 @@ static char sReply[CommandHandler::REP_MAX][64] = {
 		"heartbeat",
 };
 
+CommandHandler::CommandHandler()
+{
+}
+
 CommandHandler::CommandHandler(const char *sLocalPath): SocketIPCServer(sLocalPath)
 {
-
 }
 
 bool CommandHandler::Reply(REPLY eReply)
 {
-	unsigned int uBufSize = sizeof(sBuf);
-	int nRet = snprintf(sBuf, uBufSize, "reply=%s", sReply[eReply]);
+	unsigned int uBufSize = sizeof(m_sBuf);
+	int nRet = snprintf(m_sBuf, uBufSize, "reply=%s", sReply[eReply]);
 	if (nRet < 0) {
 		ERR_PRINT("snprintf() error!\n");
 		return false;
 	}
-	if (this->Send(sBuf, nRet) == false) {
+	if (this->Send(m_sBuf, nRet) == false) {
 		return false;
 	}
 	return true;

@@ -20,7 +20,7 @@ public:
 	bool Write(const void *pData, size_t uDataSize, size_t uNumElement);
 	bool AppendFile(const char* sFile);
 	bool IsFileExisting();
-	bool ReadLine(char *sLine, unsigned int uLineSize);
+	bool ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize);
 	bool IsEOF();
 	FILE* GetFD();
 	bool Close();

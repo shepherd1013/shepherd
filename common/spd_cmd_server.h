@@ -13,6 +13,7 @@
 class CommandHandler: public SocketIPCServer
 {
 public:
+	CommandHandler();
 	CommandHandler(const char *sLocalPath);
 	enum REPLY {
 		REP_SUCCESS		= 0,
@@ -25,7 +26,7 @@ public:
 	};
 	bool Reply(REPLY eReply);
 protected:
-	char sBuf[4096];
+	char m_sBuf[4096];
 };
 
 #endif /* SPD_CMD_SERVER_H_ */

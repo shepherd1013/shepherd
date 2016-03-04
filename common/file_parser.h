@@ -13,6 +13,8 @@
 #include <map>
 #include "file_util.h"
 
+#define BUF_MAX 4096
+
 using namespace std;
 
 class FileParser
@@ -41,8 +43,8 @@ public:
 	bool SetKeyValue(const char* sKey, const char* sVal);
 	void ShowKeyValue();
 private:
-	char sBuf[4096];
-	map<string, string> KeyValMap;
+	char m_sBuf[BUF_MAX];
+	map<string, string> m_KeyValMap;
 };
 
 

@@ -100,26 +100,30 @@ bool IniFileParser::LoadFile(const char* sIniFile)
 	const char* sKey = NULL;
 	const char* sVal = NULL;
 	char* pSave;
-	KeyValMap.clear();
+	unsigned int uReadSize = 0;
+	m_KeyValMap.clear();
 	do {
-		if (this->ReadLine(sBuf, sizeof(sBuf)) == false) {
+		uReadSize = 0;
+		if (this->ReadLine(m_sBuf, BUF_MAX, &uReadSize) == false) {
 			return false;
 		}
 		if (this->IsEOF()) {
-			break;
+			if (uReadSize == 0) {
+				break;
+			}
 		}
-		if (strlen(sBuf) == 0) {
+		if (uReadSize == 0 || m_sBuf[0] == '#') {
 			continue;
 		}
-		sKey = strtok_r(sBuf, " =", &pSave);
+		sKey = strtok_r(m_sBuf, " =\t", &pSave);
 		if (sKey == NULL) {
 			continue;
 		}
-		sVal = strtok_r(NULL, " =", &pSave);
+		sVal = strtok_r(NULL, " =\t", &pSave);
 		if (sVal == NULL) {
 			continue;
 		}
-		KeyValMap.insert(pair<string, string>(sKey, sVal));
+		m_KeyValMap.insert(pair<string, string>(sKey, sVal));
 	} while (true);
 
 	return true;
@@ -131,8 +135,8 @@ const char* IniFileParser::GetKeyValue(const char *sKey)
 		ERR_PRINT("The key is NULL!\n");
 		return NULL;
 	}
-	map<string, string>::iterator it = KeyValMap.find(sKey);
-	if (it == KeyValMap.end()) {
+	map<string, string>::iterator it = m_KeyValMap.find(sKey);
+	if (it == m_KeyValMap.end()) {
 		return NULL;
 	}
 	return it->second.c_str();
@@ -168,7 +172,7 @@ bool IniFileParser::SaveFile()
 	}
 	__fpurge(m_fp);
 #endif
-	for (map<string, string>::iterator it = KeyValMap.begin(); it != KeyValMap.end(); it++) {
+	for (map<string, string>::iterator it = m_KeyValMap.begin(); it != m_KeyValMap.end(); it++) {
 		fprintf(m_fp, "%s = %s\n", it->first.c_str(), it->second.c_str());
 	}
 	return true;
@@ -180,22 +184,22 @@ bool IniFileParser::SetKeyValue(const char* sKey, const char* sVal)
 		ERR_PRINT("The key or value is NULL!\n");
 		return false;
 	}
-	map<string, string>::iterator it = KeyValMap.find(sKey);
-	if (it != KeyValMap.end()) { //The find matched
-		KeyValMap[sKey] = sVal;
+	map<string, string>::iterator it = m_KeyValMap.find(sKey);
+	if (it != m_KeyValMap.end()) { //The find matched
+		m_KeyValMap[sKey] = sVal;
 	} else {
-		KeyValMap.insert(pair<string, string>(sKey, sVal));
+		m_KeyValMap.insert(pair<string, string>(sKey, sVal));
 	}
 	return true;
 }
 
 void IniFileParser::ShowKeyValue()
 {
-	if (KeyValMap.empty()) {
+	if (m_KeyValMap.empty()) {
 		return;
 	}
 	DBG_PRINT("Show key and value table:\n");
-	for (map<string, string>::iterator it = KeyValMap.begin(); it != KeyValMap.end(); it++) {
+	for (map<string, string>::iterator it = m_KeyValMap.begin(); it != m_KeyValMap.end(); it++) {
 		printf("Key:%s, Value:%s\n", it->first.c_str(), it->second.c_str());
 	}
 }

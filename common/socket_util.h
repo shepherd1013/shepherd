@@ -89,6 +89,7 @@ public:
 	bool Recv();
 	bool Recv(char* sBuf, unsigned int uBufSize);
 	bool Send(const char *SendData, unsigned int uDataSize);
+	bool Connect(const char *sLocalPath);
 
 protected:
 	char			m_sBuf[4096];
