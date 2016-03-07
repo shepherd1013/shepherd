@@ -42,6 +42,13 @@ public:
 	const char* GetKeyValue(const char* sKey);
 	bool SetKeyValue(const char* sKey, const char* sVal);
 	void ShowKeyValue();
+//	bool GetKeyIntValue(const char* sKey, int *pVal);
+//	bool GetKeyUIntValue(const char* sKey, unsigned int *pVal);
+//	bool GetKeyBoolValue(const char* sKey, bool *pVal);
+	bool GetKeyValue(const char* sKey, int *pVal);
+	bool GetKeyValue(const char* sKey, unsigned int *pVal);
+	bool GetKeyValue(const char* sKey, bool *pVal);
+
 private:
 	char m_sBuf[BUF_MAX];
 	map<string, string> m_KeyValMap;

@@ -9,6 +9,7 @@
 #include "file_parser.h"
 #include "debug.h"
 #include "file_util.h"
+#include "string_util.h"
 
 FileParser::FileParser(const char *sFilename)
 {
@@ -202,4 +203,106 @@ void IniFileParser::ShowKeyValue()
 	for (map<string, string>::iterator it = m_KeyValMap.begin(); it != m_KeyValMap.end(); it++) {
 		printf("Key:%s, Value:%s\n", it->first.c_str(), it->second.c_str());
 	}
+}
+
+//bool IniFileParser::GetKeyIntValue(const char* sKey, int *pVal)
+//{
+//	const char *sVal = this->GetKeyValue(sKey);
+//	if (sVal == NULL) {
+//		ERR_PRINT("Get key (%s) failed!\n", sKey);
+//		return false;
+//	}
+//
+//	long int lOutput;
+//	if (StringUtil::StrToLInt(sVal, &lOutput) == false) {
+//		ERR_PRINT("Convert string (%s) to long integer failed!\n", sVal);
+//		return false;
+//	}
+//	*pVal = (int)lOutput;
+//	return true;
+//}
+//
+//bool IniFileParser::GetKeyUIntValue(const char* sKey, unsigned int *pVal)
+//{
+//	const char *sVal = this->GetKeyValue(sKey);
+//	if (sVal == NULL) {
+//		ERR_PRINT("Get key (%s) failed!\n", sKey);
+//		return false;
+//	}
+//
+//	unsigned long int lOutput;
+//	if (StringUtil::StrToULInt(sVal, &lOutput) == false) {
+//		ERR_PRINT("Convert string (%s) to unsigned long integer failed!\n", sVal);
+//		return false;
+//	}
+//	*pVal = (unsigned int)lOutput;
+//	return true;
+//}
+//
+//bool IniFileParser::GetKeyBoolValue(const char* sKey, bool *pVal)
+//{
+//	const char *sVal = this->GetKeyValue(sKey);
+//	if (sVal == NULL) {
+//		ERR_PRINT("Get key (%s) failed!\n", sKey);
+//		return false;
+//	}
+//
+//	unsigned long int lOutput;
+//	if (StringUtil::StrToULInt(sVal, &lOutput) == false) {
+//		ERR_PRINT("Convert string (%s) to unsigned long integer failed!\n", sVal);
+//		return false;
+//	}
+//	*pVal = (bool)lOutput;
+//	return true;
+//}
+
+bool IniFileParser::GetKeyValue(const char* sKey, int *pVal)
+{
+	const char *sVal = this->GetKeyValue(sKey);
+	if (sVal == NULL) {
+		ERR_PRINT("Get key (%s) failed!\n", sKey);
+		return false;
+	}
+
+	long int lOutput;
+	if (StringUtil::StrToLInt(sVal, &lOutput) == false) {
+		ERR_PRINT("Convert string (%s) to long integer failed!\n", sVal);
+		return false;
+	}
+	*pVal = (int)lOutput;
+	return true;
+}
+
+bool IniFileParser::GetKeyValue(const char* sKey, unsigned int *pVal)
+{
+	const char *sVal = this->GetKeyValue(sKey);
+	if (sVal == NULL) {
+		ERR_PRINT("Get key (%s) failed!\n", sKey);
+		return false;
+	}
+
+	unsigned long int lOutput;
+	if (StringUtil::StrToULInt(sVal, &lOutput) == false) {
+		ERR_PRINT("Convert string (%s) to unsigned long integer failed!\n", sVal);
+		return false;
+	}
+	*pVal = (unsigned int)lOutput;
+	return true;
+}
+
+bool IniFileParser::GetKeyValue(const char* sKey, bool *pVal)
+{
+	const char *sVal = this->GetKeyValue(sKey);
+	if (sVal == NULL) {
+		ERR_PRINT("Get key (%s) failed!\n", sKey);
+		return false;
+	}
+
+	unsigned long int lOutput;
+	if (StringUtil::StrToULInt(sVal, &lOutput) == false) {
+		ERR_PRINT("Convert string (%s) to unsigned long integer failed!\n", sVal);
+		return false;
+	}
+	*pVal = (bool)lOutput;
+	return true;
 }

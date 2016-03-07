@@ -11,7 +11,9 @@
 class StringUtil
 {
 public:
-	static bool Snprintf(char *s, size_t n, const char *format, ...);
+	static bool Snprintf(char *s, size_t n, const char *format, ...);//TODO: To be verified
+	static bool StrToULInt(const char* sInput, unsigned long int *pOutput, int nBase = 0);
+	static bool StrToLInt(const char* sInput, long int *pOutput, int nBase = 0);
 };
 
 
