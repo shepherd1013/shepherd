@@ -24,7 +24,7 @@ public:
 		REP_HEARTBEAT	= 5,
 		REP_MAX
 	};
-	bool Reply(REPLY eReply);
+	bool Reply(enum REPLY eReply);
 protected:
 	char m_sBuf[4096];
 };

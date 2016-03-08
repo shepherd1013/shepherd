@@ -24,7 +24,7 @@ CommandHandler::CommandHandler(const char *sLocalPath): SocketIPCServer(sLocalPa
 {
 }
 
-bool CommandHandler::Reply(REPLY eReply)
+bool CommandHandler::Reply(enum REPLY eReply)
 {
 	unsigned int uBufSize = sizeof(m_sBuf);
 	int nRet = snprintf(m_sBuf, uBufSize, "reply=%s", sReply[eReply]);

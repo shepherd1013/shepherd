@@ -8,6 +8,7 @@
 #ifndef FILE_UTIL_H_
 #define FILE_UTIL_H_
 #include <stdio.h>
+#define FILE_PATH_MAX 256
 
 class File
 {
@@ -26,8 +27,8 @@ public:
 	bool Close();
 
 protected:
-	const char*	m_sFilePath;
-	FILE*			m_fp;
+	char	m_sFilePath[FILE_PATH_MAX];
+	FILE*	m_fp;
 };
 
 class FileUtil
