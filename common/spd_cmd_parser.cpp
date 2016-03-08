@@ -34,9 +34,13 @@ bool CommandParser::LoadData(const char* sData)
 	while (pStr1 != NULL) {
 		pStr2 = strtok_r(pStr1, "=", &pSave2);
 		sKey = pStr2;
-		pStr2 = strtok_r(NULL, "=", &pSave2);
-		sVal = pStr2;
-		CmdMap.insert(pair<string, string>(sKey, sVal));
+		if (sKey != NULL) {
+			pStr2 = strtok_r(NULL, "=", &pSave2);
+			sVal = pStr2;
+			if (sVal != NULL) {
+				CmdMap.insert(pair<string, string>(sKey, sVal));
+			}
+		}
 		pStr1 = strtok_r(NULL, "&", &pSave1);
 	}
 	return true;
