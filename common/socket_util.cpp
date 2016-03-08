@@ -428,19 +428,7 @@ bool SocketIPCServer::Recv(char* sBuf, unsigned int uBufSize)
 
 bool SocketIPCServer::Send(const char *SendData, unsigned int uDataSize)
 {
-	int nFD;
-	if (SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &nFD) == false) {
-		return false;
-	}
-	if (SocketUtil::Connect(nFD, (struct sockaddr *)&m_unRemoteAddr, m_uRemoteAddrLen) == false) {
-		SocketUtil::Close(nFD);
-		return false;
-	}
-	if(SocketUtil::Send(nFD, SendData, uDataSize, 0) == false) {
-		SocketUtil::Close(nFD);
-		return false;
-	}
-	if(SocketUtil::Close(nFD) == false) {
+	if (SocketUtil::SendTo(m_sFD, SendData, uDataSize, 0, (struct sockaddr *)&m_unRemoteAddr, m_uRemoteAddrLen) == false) {
 		return false;
 	}
 	return true;
