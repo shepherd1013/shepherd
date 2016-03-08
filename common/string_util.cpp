@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include "debug.h"
 #include "string_util.h"
 
@@ -28,7 +29,7 @@ bool StringUtil::StrToULInt(const char* sInput, unsigned long int *pOutput, int 
 	char* pEnd;
 	*pOutput = strtoul(sInput, &pEnd, nBase);
 	int nRet = errno;
-	if (nRet != 0) {
+	if ((nRet == ERANGE && (*pOutput == ULONG_MAX)) || (nRet != 0 && *pOutput == 0)) {
 		ERR_PRINT("strtoul() error: %s!\n", strerror(nRet));
 		return false;
 	}
@@ -44,8 +45,8 @@ bool StringUtil::StrToLInt(const char* sInput, long int *pOutput, int nBase)
 	char* pEnd;
 	*pOutput = strtol(sInput, &pEnd, nBase);
 	int nRet = errno;
-	if (nRet != 0) {
-		ERR_PRINT("strtoul() error: %s!\n", strerror(nRet));
+	if ((nRet == ERANGE && (*pOutput == LONG_MAX || *pOutput == LONG_MIN)) || (nRet != 0 && *pOutput == 0)) {
+		ERR_PRINT("strtol() error: %s!\n", strerror(nRet));
 		return false;
 	}
 	if (*pEnd != '\0') {
