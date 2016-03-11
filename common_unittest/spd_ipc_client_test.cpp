@@ -20,6 +20,9 @@ void IPCClientTest::Run()
 	}
 	char sBuf[512] = {0};
 	do {
+		if(client.Wait(100) == false) {
+			continue;
+		}
 		if (client.Recv(sBuf, sizeof(sBuf)) == false) {
 			continue;
 		}
