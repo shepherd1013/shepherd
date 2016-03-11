@@ -57,6 +57,7 @@ public:
 	static bool Listen(int sockfd, int nPendingNum);
 	static bool Accept(int sockfd, struct sockaddr *RemoteAddr, socklen_t *RemoteAddrLen, int *nAcceptedFD);
 	static bool Send(int sockfd, const void *buf, size_t len, int flags);
+	static bool Send(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr* RemoteAddr, socklen_t RemoteAddrLen);
 };
 
 class Socket
@@ -101,11 +102,13 @@ class SocketIPCClient: public SocketIPC
 {
 public:
 	SocketIPCClient(const char *sLocalPath, const char *sRemotePath);
+	SocketIPCClient();
 	~SocketIPCClient();
 
 	bool Send(const char *SendData, unsigned int uDataSize);
 	bool Recv(char* sBuf, unsigned int uBufSize);
 	bool Connect(const char *sLocalPath, const char *sRemotePath);
+	bool Wait(time_t tMS);
 protected:
 	sockaddr_un		m_unRemoteAddr;
 	socklen_t		m_uRemoteAddrLen;

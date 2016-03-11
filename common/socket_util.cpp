@@ -328,6 +328,38 @@ bool SocketUtil::Send(int sockfd, const void *buf, size_t len, int flags)
 	return true;
 }
 
+bool SocketUtil::Send(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr* RemoteAddr, socklen_t RemoteAddrLen)
+{
+	int nSndRet = 0;
+	char* pBuf = (char*)buf;
+	int nDataSize = len;
+	unsigned int uSndTotal = 0;
+	while (true) {
+		nSndRet = sendto(sockfd, pBuf, nDataSize, 0, RemoteAddr, RemoteAddrLen);
+		if (nSndRet <= 0) {
+			if (nSndRet < 0) {
+				nSndRet = errno;
+				if (nSndRet != ECONNRESET) {
+					ERR_PRINT("sendto() error: %s!\n", strerror(nSndRet));
+				}
+			} else {
+				DBG_PRINT("Client disconnect!\n");
+			}
+			return false;
+		}
+
+		uSndTotal += nSndRet;
+		if (nSndRet != nDataSize) {
+			DBG_PRINT("Resend data!\n");
+			nDataSize -= nSndRet;
+			pBuf += nSndRet;
+			continue;
+		}
+		break;
+	}
+	return true;
+}
+
 Socket::Socket()
 {
 }
@@ -434,7 +466,13 @@ bool SocketIPCServer::Send(const char *SendData, unsigned int uDataSize)
 	return true;
 }
 
+SocketIPCClient::SocketIPCClient()
+:m_uRemoteAddrLen(sizeof(m_unRemoteAddr))
+{
+}
+
 SocketIPCClient::SocketIPCClient(const char *sLocalPath, const char *sRemotePath)
+:m_uRemoteAddrLen(sizeof(m_unRemoteAddr))
 {
 	this->Connect(sLocalPath, sRemotePath);
 }
@@ -445,7 +483,7 @@ SocketIPCClient::~SocketIPCClient()
 
 bool SocketIPCClient::Send(const char *SendData, unsigned int uDataSize)
 {
-	if (SocketUtil::Send(m_sFD, SendData, uDataSize, 0) == false) {
+	if (SocketUtil::Send(m_sFD, SendData, uDataSize, 0, (struct sockaddr*)&m_unRemoteAddr, m_uRemoteAddrLen) == false) {
 		return false;
 	}
 	return true;
@@ -487,14 +525,19 @@ bool SocketIPCClient::Connect(const char *sLocalPath, const char *sRemotePath)
 		return false;
 	}
 
-	struct sockaddr_un sRemote;
-	socklen_t RemoteLength = sizeof(sRemote);
-	memset(&sRemote, 0, sizeof(sRemote));
-	sRemote.sun_family = AF_UNIX;
-	strncpy(sRemote.sun_path, sRemotePath, sizeof(sRemote.sun_path));
-	bRet = SocketUtil::Connect(m_sFD, (struct sockaddr *)&sRemote, RemoteLength);
-	if (bRet == false) {
-		ERR_PRINT("SocketUtil::Connect() error!\n");
+	memset(&m_unRemoteAddr, 0, m_uRemoteAddrLen);
+	m_unRemoteAddr.sun_family = AF_UNIX;
+	strncpy(m_unRemoteAddr.sun_path, sRemotePath, sizeof(m_unRemoteAddr.sun_path));
+
+	return true;
+}
+
+bool SocketIPCClient::Wait(time_t tMS)
+{
+	vector<int> sRegisterFD;
+	int sEventFD;
+	sRegisterFD.push_back(m_sFD);
+	if (SocketUtil::Wait(tMS, sRegisterFD, &sEventFD) == false) {
 		return false;
 	}
 	return true;
