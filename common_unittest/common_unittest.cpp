@@ -9,6 +9,7 @@
 #include "file_unittest.h"
 #include "spd_msgq_utest.h"
 #include "spd_ipc_server_test.h"
+#include "spd_ipc_client_test.h"
 
 void Unittest::Run()
 {
@@ -18,8 +19,11 @@ void Unittest::Run()
 //	MsgQUTest MQtest;
 //	MQtest.Run();
 
-	IPCServerTest IPCSvrTest;
-	IPCSvrTest.Run();
+//	IPCServerTest IPCSvrTest;
+//	IPCSvrTest.Run();
+
+	IPCClientTest IPCCltTest;
+	IPCCltTest.Run();
 }
 
 
