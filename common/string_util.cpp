@@ -27,8 +27,10 @@ bool StringUtil::Snprintf(char *s, size_t n, const char *format, ...)
 bool StringUtil::StrToULInt(const char* sInput, unsigned long int *pOutput, int nBase)
 {
 	char* pEnd;
+	int nRet = 0;
+	errno = 0;
 	*pOutput = strtoul(sInput, &pEnd, nBase);
-	int nRet = errno;
+	nRet = errno;
 	if ((nRet == ERANGE && (*pOutput == ULONG_MAX)) || (nRet != 0 && *pOutput == 0)) {
 		ERR_PRINT("strtoul() error: %s!\n", strerror(nRet));
 		return false;
@@ -43,8 +45,10 @@ bool StringUtil::StrToULInt(const char* sInput, unsigned long int *pOutput, int 
 bool StringUtil::StrToLInt(const char* sInput, long int *pOutput, int nBase)
 {
 	char* pEnd;
+	int nRet = 0;
+	errno = 0;
 	*pOutput = strtol(sInput, &pEnd, nBase);
-	int nRet = errno;
+	nRet = errno;
 	if ((nRet == ERANGE && (*pOutput == LONG_MAX || *pOutput == LONG_MIN)) || (nRet != 0 && *pOutput == 0)) {
 		ERR_PRINT("strtol() error: %s!\n", strerror(nRet));
 		return false;
