@@ -13,12 +13,21 @@
 
 GpioUtil::GpioUtil(unsigned int uGroupNum, unsigned int uPinNum)
 {
-	m_uGroupNum = uGroupNum;
-	m_uPinNum = uPinNum;
+	this->Load(uGroupNum, uPinNum);
+}
+
+GpioUtil::GpioUtil()
+{
 }
 
 GpioUtil::~GpioUtil()
 {
+}
+
+void GpioUtil::Load(unsigned int uGroupNum, unsigned int uPinNum)
+{
+	m_uGroupNum = uGroupNum;
+	m_uPinNum = uPinNum;
 }
 
 bool GpioUtil::SetPinDirectionToOutput()

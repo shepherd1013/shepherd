@@ -17,7 +17,9 @@ class GpioUtil
 {
 public:
 	GpioUtil(unsigned int uGroupNum, unsigned int uPinNum);
+	GpioUtil();
 	~GpioUtil();
+	void Load(unsigned int uGroupNum, unsigned int uPinNum);
 	virtual bool SetPinDirectionToOutput();
 	virtual bool SetPinDirectionToInput();
 	virtual bool ReadPinValue(unsigned int *pValue);
