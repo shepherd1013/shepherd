@@ -100,11 +100,15 @@ protected:
 class SocketIPCClient: public SocketIPC
 {
 public:
-	SocketIPCClient(const char *sRemotePath);
+	SocketIPCClient(const char *sLocalPath, const char *sRemotePath);
 	~SocketIPCClient();
 
 	bool Send(const char *SendData, unsigned int uDataSize);
+	bool Recv(char* sBuf, unsigned int uBufSize);
+	bool Connect(const char *sLocalPath, const char *sRemotePath);
 protected:
+	sockaddr_un		m_unRemoteAddr;
+	socklen_t		m_uRemoteAddrLen;
 };
 
 

@@ -434,13 +434,57 @@ bool SocketIPCServer::Send(const char *SendData, unsigned int uDataSize)
 	return true;
 }
 
-SocketIPCClient::SocketIPCClient(const char* sRemotePath)
+SocketIPCClient::SocketIPCClient(const char *sLocalPath, const char *sRemotePath)
+{
+	this->Connect(sLocalPath, sRemotePath);
+}
+
+SocketIPCClient::~SocketIPCClient()
+{
+}
+
+bool SocketIPCClient::Send(const char *SendData, unsigned int uDataSize)
+{
+	if (SocketUtil::Send(m_sFD, SendData, uDataSize, 0) == false) {
+		return false;
+	}
+	return true;
+}
+
+bool SocketIPCClient::Recv(char* sBuf, unsigned int uBufSize)
+{
+	unsigned int uRecvLen;
+	if (SocketUtil::RecvFrom(m_sFD, sBuf, uBufSize, 0, (struct sockaddr*)&m_unRemoteAddr, &m_uRemoteAddrLen, &uRecvLen) == false) {
+		return false;
+	}
+//	DBG_PRINT("uRecvLen: %u\n", uRecvLen);
+	return true;
+}
+
+bool SocketIPCClient::Connect(const char *sLocalPath, const char *sRemotePath)
 {
 	bool bRet;
 	bRet = SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &m_sFD);
 	if (bRet == false) {
 		ERR_PRINT("SocketUtil::Socket() error!\n");
-		return;
+		return false;
+	}
+
+	int nRet = unlink(sLocalPath);
+	if ( (nRet < 0) && (errno != ENOENT) ) {
+		nRet = errno;
+		ERR_PRINT("unlink() error: %s! errno: %d\n", strerror(nRet), nRet);
+		return false;
+	}
+
+	int size;
+	struct sockaddr_un un;
+	memset(&un, 0, sizeof(un));
+	strncpy(un.sun_path, sLocalPath, sizeof(un.sun_path));
+	un.sun_family = AF_UNIX;
+	size = offsetof(struct sockaddr_un, sun_path) + strlen(un.sun_path);
+	if (SocketUtil::Bind(m_sFD, (struct sockaddr *)&un, size) == false) {
+		return false;
 	}
 
 	struct sockaddr_un sRemote;
@@ -451,17 +495,6 @@ SocketIPCClient::SocketIPCClient(const char* sRemotePath)
 	bRet = SocketUtil::Connect(m_sFD, (struct sockaddr *)&sRemote, RemoteLength);
 	if (bRet == false) {
 		ERR_PRINT("SocketUtil::Connect() error!\n");
-		return;
-	}
-}
-
-SocketIPCClient::~SocketIPCClient()
-{
-}
-
-bool SocketIPCClient::Send(const char *SendData, unsigned int uDataSize)
-{
-	if (SocketUtil::Send(m_sFD, SendData, uDataSize, 0) == false) {
 		return false;
 	}
 	return true;
