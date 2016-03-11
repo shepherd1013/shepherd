@@ -250,7 +250,7 @@ bool SocketUtil::SendTo(int sockfd, const void *buf, size_t len, int flags, stru
 	}
 
 	if (len != (unsigned int)nRet) {
-		ERR_PRINT("Data size (%u) isn't equal to sent size (%d)!\n", len, nRet);
+		ERR_PRINT("Data size (%u) isn't equal to sent size (%d)!\n", (unsigned int)len, nRet);
 		return false;
 	}
 

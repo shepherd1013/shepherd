@@ -83,9 +83,9 @@ bool SigUtil::Wait(time_t tMS, unsigned int *uSigNo)
 	if (SocketUtil::Close(nFD) == false) {
 		return false;
 	}
-	DBG_PRINT("Read size: %d\n", nReadSize);
+	DBG_PRINT("Read size: %d\n", (int)nReadSize);
 	if (nReadSize != (int)uSigInfoSize) {
-		ERR_PRINT("Invalid size (%d) of reading signal info!\n", nReadSize);
+		ERR_PRINT("Invalid size (%d) of reading signal info!\n", (int)nReadSize);
 		return false;
 	}
 	DBG_PRINT("Signal no:%u\n", SigInfo.ssi_signo);
