@@ -20,7 +20,7 @@ bool TimeUtil::GetUptime(struct timespec *tTime)
 	return true;
 }
 
-struct timespec TimeUtil::TimeDiff(struct timespec tTimeA, struct timespec tTimeB)
+struct timespec TimeUtil::DiffTime(struct timespec tTimeA, struct timespec tTimeB)
 {
 	struct timespec tTime;
 	long int nNanoSecDiff;

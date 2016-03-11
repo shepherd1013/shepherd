@@ -110,7 +110,7 @@ bool MsgQ::Send(const char* sSndData, unsigned int uDataSize, unsigned int uTime
 				ERR_PRINT("Get uptime failed!\n");
 				return false;
 			}
-			tDiffTime = TimeUtil::TimeDiff(tCurrentTime, tStartTime);
+			tDiffTime = TimeUtil::DiffTime(tCurrentTime, tStartTime);
 			unsigned long int uTimeDiffMSec = tDiffTime.tv_sec * 1000 + tDiffTime.tv_nsec / 1000000;
 			if ((unsigned int)uTimeDiffMSec >= uTimeoutMSec) {
 				ERR_PRINT("Send message timeout!\n");
