@@ -25,6 +25,7 @@ public:
 		REP_MAX
 	};
 	bool Reply(enum REPLY eReply);
+	bool Reply(enum REPLY eReply, const char* sFormat, ...);
 protected:
 	char m_sBuf[4096];
 };
