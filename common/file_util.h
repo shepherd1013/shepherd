@@ -43,6 +43,8 @@ public:
 	static bool GetFileModTime(const char *filename, struct timespec *pTime);
 	static bool CopyFile(const char* sSrc, const char* sDest);
 	static bool CopyFile(FILE *fpSrc, FILE *fpDst);
+	static bool Symlink(const char* sOldPath, const char* sNewPath);
+	static bool Unlink(const char* sFilePath);
 };
 
 

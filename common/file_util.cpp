@@ -145,6 +145,30 @@ bool FileUtil::CopyFile(FILE *fpSrc, FILE *fpDst)
 	return true;
 }
 
+bool FileUtil::Symlink(const char* sOldPath, const char* sNewPath)
+{
+	int nRet = symlink(sOldPath, sNewPath);
+	if (nRet < 0) {
+		nRet = errno;
+		ERR_PRINT("symlink() error: %s!\n", strerror(nRet));
+		return false;
+	}
+	return true;
+}
+
+bool FileUtil::Unlink(const char* sFilePath)
+{
+	int nRet = unlink(sFilePath);
+	if (nRet < 0) {
+		nRet = errno;
+		if(nRet != ENOENT) {
+			ERR_PRINT("unlink() error: %s!\n", strerror(nRet));
+			return false;
+		}
+	}
+	return true;
+}
+
 File::File()
 :m_fp(NULL)
 {
