@@ -59,3 +59,42 @@ bool StringUtil::StrToLInt(const char* sInput, long int *pOutput, int nBase)
 	}
 	return true;
 }
+
+bool StringUtil::Replace(char* sData, unsigned int uBufSize, const char* sOldKey, const char* sNewKey)
+{
+	if (sData == NULL || uBufSize == 0 || sOldKey == NULL || sNewKey == NULL) {
+		ERR_PRINT("Invalid argument!\n");
+		return false;
+	}
+	char sTmp[1024] = {0};
+	char *pStart = sData;
+	char *pFound = NULL;
+	unsigned int uStrLen = 0;
+	unsigned int uOldKeyLen = strlen(sOldKey);
+	unsigned int uNewKeyLen = strlen(sNewKey);
+	do {
+		pFound = strstr(pStart, sOldKey);
+		if (pFound == NULL) {
+			if (*pStart != '\0') {
+				strcat(sTmp, pStart);
+			}
+			break;
+		}
+		uStrLen = (unsigned int)(pFound - pStart);
+		if(uStrLen != 0) {
+			strncat(sTmp, pStart, uStrLen);
+		}
+		if (uNewKeyLen != 0) {
+			strcat(sTmp, sNewKey);
+		}
+		pStart = pFound + uOldKeyLen;
+	} while (true);
+
+	if (strlen(sTmp) > uBufSize) {
+		ERR_PRINT("The buffer size isn't enough!\n");
+		return false;
+	}
+	bzero(sData, uBufSize);
+	strncpy(sData, sTmp, uBufSize);
+	return true;
+}

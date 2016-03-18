@@ -10,6 +10,7 @@
 #include "spd_msgq_utest.h"
 #include "spd_ipc_server_test.h"
 #include "spd_ipc_client_test.h"
+#include "spd_string_util_test.h"
 
 void Unittest::Run()
 {
@@ -22,8 +23,11 @@ void Unittest::Run()
 //	IPCServerTest IPCSvrTest;
 //	IPCSvrTest.Run();
 
-	IPCClientTest IPCCltTest;
-	IPCCltTest.Run();
+//	IPCClientTest IPCCltTest;
+//	IPCCltTest.Run();
+
+	StrUtilTest StrTest;
+	StrTest.Run();
 }
 
 

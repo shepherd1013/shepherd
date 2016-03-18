@@ -7,6 +7,7 @@
 
 #ifndef STRING_UTIL_H_
 #define STRING_UTIL_H_
+#include <sys/types.h>
 
 class StringUtil
 {
@@ -14,6 +15,7 @@ public:
 	static bool Snprintf(char* sBuf, size_t uBufSize, const char* format, ...);
 	static bool StrToULInt(const char* sInput, unsigned long int *pOutput, int nBase = 0);
 	static bool StrToLInt(const char* sInput, long int *pOutput, int nBase = 0);
+	static bool Replace(char* sData, unsigned int uBufSize, const char* sOld, const char* sNew);
 };
 
 
