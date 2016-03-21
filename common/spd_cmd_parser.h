@@ -19,6 +19,9 @@ public:
 	CommandParser();
 	CommandParser(const char* sData);
 	const char* GetKeyValue(const char *sKey);
+	bool GetKeyValue(const char* sKey, int *pVal);
+	bool GetKeyValue(const char* sKey, unsigned int *pVal);
+	bool GetKeyValue(const char* sKey, bool *pVal);
 	bool LoadData(const char* sData);
 
 private:

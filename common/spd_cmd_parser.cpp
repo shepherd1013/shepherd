@@ -7,6 +7,7 @@
 #include <string.h>
 #include "debug.h"
 #include "spd_cmd_parser.h"
+#include "string_util.h"
 
 CommandParser::CommandParser()
 {
@@ -57,4 +58,55 @@ const char* CommandParser::GetKeyValue(const char *sKey)
 		return NULL;
 	}
 	return it->second.c_str();
+}
+
+bool CommandParser::GetKeyValue(const char* sKey, int *pVal)
+{
+	const char *sVal = this->GetKeyValue(sKey);
+	if (sVal == NULL) {
+		ERR_PRINT("Get key (%s) failed!\n", sKey);
+		return false;
+	}
+
+	long int lOutput;
+	if (StringUtil::StrToLInt(sVal, &lOutput) == false) {
+		ERR_PRINT("Convert string (%s) to long integer failed!\n", sVal);
+		return false;
+	}
+	*pVal = (int)lOutput;
+	return true;
+}
+
+bool CommandParser::GetKeyValue(const char* sKey, unsigned int *pVal)
+{
+	const char *sVal = this->GetKeyValue(sKey);
+	if (sVal == NULL) {
+		ERR_PRINT("Get key (%s) failed!\n", sKey);
+		return false;
+	}
+
+	unsigned long int lOutput;
+	if (StringUtil::StrToULInt(sVal, &lOutput) == false) {
+		ERR_PRINT("Convert string (%s) to unsigned long integer failed!\n", sVal);
+		return false;
+	}
+	*pVal = (unsigned int)lOutput;
+	return true;
+}
+
+bool CommandParser::GetKeyValue(const char* sKey, bool *pVal)
+{
+	const char *sVal = this->GetKeyValue(sKey);
+	if (sVal == NULL) {
+		ERR_PRINT("Get key (%s) failed!\n", sKey);
+		return false;
+	}
+
+	unsigned long int lOutput;
+	if (StringUtil::StrToULInt(sVal, &lOutput) == false) {
+		ERR_PRINT("Convert string (%s) to unsigned long integer failed!\n", sVal);
+		return false;
+	}
+	*pVal = (bool)lOutput;
+	return true;
 }
