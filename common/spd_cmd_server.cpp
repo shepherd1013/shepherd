@@ -19,10 +19,12 @@ static char sReply[CommandHandler::REP_MAX][64] = {
 
 CommandHandler::CommandHandler()
 {
+	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
 }
 
-CommandHandler::CommandHandler(const char *sLocalPath): SocketIPCServer(sLocalPath)
+CommandHandler::CommandHandler(const char *sLocalPath): SocketIPC(sLocalPath, NULL)
 {
+	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
 }
 
 bool CommandHandler::Reply(enum REPLY eReply)

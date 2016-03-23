@@ -10,7 +10,7 @@
 
 #include "socket_util.h"
 
-class CommandHandler: public SocketIPCServer
+class CommandHandler: public SocketIPC
 {
 public:
 	CommandHandler();

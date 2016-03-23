@@ -14,7 +14,7 @@ void IPCClientTest::Run()
 	const char* sLocal = "/tmp/SI_RESTORER_REPLY_TEST";
 	const char* sRemote = "/tmp/SI_RESTORER";
 	const char* sCmd = "action=load_default";
-	SocketIPCClient client(sLocal, sRemote);
+	SocketIPC client(sLocal, sRemote);
 	if (client.Send(sCmd, strlen(sCmd)) == false){
 		return;
 	}

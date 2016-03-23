@@ -15,6 +15,9 @@
 #include <sys/socket.h>
 #include <list>
 #include <sys/un.h>
+#include <netinet/in.h>
+
+#define IPC_PATH_MAX	256
 
 using namespace std;
 
@@ -58,61 +61,39 @@ public:
 	static bool Accept(int sockfd, struct sockaddr *RemoteAddr, socklen_t *RemoteAddrLen, int *nAcceptedFD);
 	static bool Send(int sockfd, const void *buf, size_t len, int flags);
 	static bool Send(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr* RemoteAddr, socklen_t RemoteAddrLen);
+	static bool IsPortValid(unsigned int uPort);
 };
 
 class Socket
 {
 public:
-	Socket();
 	~Socket();
 	int GetFD();
+	bool Send(const char *SendData, unsigned int uDataSize);
+	bool Wait(time_t tMS);
+	bool Wait(time_t tMS, vector<int> WaitFDList, int nEventFD);
+	bool Recv(char* sBuf, unsigned int uBufSize);
+
 protected:
 	int m_sFD;
+	struct sockaddr	*	m_pRemoteAddr;
+	socklen_t			m_uRemoteAddrLen;
 };
 
 class SocketIPC: public Socket
 {
 public:
 	SocketIPC();
+	SocketIPC(const char *sLocalPath, const char *sRemotePath);
 	~SocketIPC();
 
-protected:
-};
-
-class SocketIPCServer: public SocketIPC
-{
-public:
-	SocketIPCServer();
-	SocketIPCServer(const char *sLocalPath);
-	~SocketIPCServer();
-
-	bool Wait(time_t tMS);
-	bool Recv();
-	bool Recv(char* sBuf, unsigned int uBufSize);
-	bool Send(const char *SendData, unsigned int uDataSize);
-	bool Connect(const char *sLocalPath);
-
-protected:
-	char			m_sBuf[4096];
-	sockaddr_un		m_unRemoteAddr;
-	socklen_t		m_uRemoteAddrLen;
-};
-
-class SocketIPCClient: public SocketIPC
-{
-public:
-	SocketIPCClient(const char *sLocalPath, const char *sRemotePath);
-	SocketIPCClient();
-	~SocketIPCClient();
-
-	bool Send(const char *SendData, unsigned int uDataSize);
-	bool Recv(char* sBuf, unsigned int uBufSize);
 	bool Connect(const char *sLocalPath, const char *sRemotePath);
-	bool Wait(time_t tMS);
-protected:
-	sockaddr_un		m_unRemoteAddr;
-	socklen_t		m_uRemoteAddrLen;
-};
 
+protected:
+	bool			m_bIsConnected;
+	char 			m_sLocalPath[IPC_PATH_MAX];
+	char 			m_sRemotePath[IPC_PATH_MAX];
+	sockaddr_un		m_unRemoteAddr;
+};
 
 #endif /* SOCKET_UTIL_H_ */
