@@ -364,10 +364,16 @@ bool SocketUtil::Send(int sockfd, const void *buf, size_t len, int flags, const 
 bool SocketUtil::IsPortValid(unsigned int uPort)
 {
 	if ((uPort < 1) || (uPort > 65535)) {
-		ERR_PRINT("Invalid port number (%u)!\n", uPort);
 		return false;
 	}
 	return true;
+}
+
+Socket::Socket()
+{
+	m_sFD = -1;
+	m_pRemoteAddr = NULL;
+	m_uRemoteAddrLen = 0;
 }
 
 Socket::~Socket()

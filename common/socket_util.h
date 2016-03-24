@@ -67,6 +67,7 @@ public:
 class Socket
 {
 public:
+	Socket();
 	~Socket();
 	int GetFD();
 	bool Send(const char *SendData, unsigned int uDataSize);
@@ -87,7 +88,7 @@ public:
 	SocketIPC(const char *sLocalPath, const char *sRemotePath);
 	~SocketIPC();
 
-	bool Connect(const char *sLocalPath, const char *sRemotePath);
+	bool Connect(const char *sLocalPath, const char *sRemotePath = NULL);
 
 protected:
 	bool			m_bIsConnected;
