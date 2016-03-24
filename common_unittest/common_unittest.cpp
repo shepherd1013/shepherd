@@ -11,6 +11,8 @@
 #include "spd_ipc_server_test.h"
 #include "spd_ipc_client_test.h"
 #include "spd_string_util_test.h"
+#include "spd_tcp_server_test.h"
+#include "spd_tcp_client_test.h"
 
 void Unittest::Run()
 {
@@ -26,8 +28,15 @@ void Unittest::Run()
 //	IPCClientTest IPCCltTest;
 //	IPCCltTest.Run();
 
-	StrUtilTest StrTest;
-	StrTest.Run();
+//	StrUtilTest StrTest;
+//	StrTest.Run();
+
+//	TcpServerTest TcpSvr;
+//	TcpSvr.Run();
+
+	TcpClientTest TcpClt;
+	TcpClt.Run();
 }
+
 
 
