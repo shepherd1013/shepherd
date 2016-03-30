@@ -47,6 +47,8 @@ public:
 	static bool Symlink(const char* sOldPath, const char* sNewPath);
 	static bool Unlink(const char* sFilePath);
 	static bool GetPartitionSize(const char* sFilePath, long unsigned int* pPartiSizeKB);
+	static const char*GetBaseName(const char* sFilePath);
+	static const char*GetDirectoryName(const char* sFilePath);
 };
 
 

@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include "debug.h"
 #include "string_util.h"
+#include <libgen.h>
 
 FILE* FileUtil::Open(const char *sFilename, const char *sMode)
 {
@@ -170,24 +171,13 @@ bool FileUtil::Unlink(const char* sFilePath)
 	return true;
 }
 
-bool FileUtil::GetPartitionSize(const char* sDevicePath, long unsigned int *pPartiSizeKB)
+bool FileUtil::GetPartitionSize(const char* sDevicePath, long unsigned int *pPartiSize)
 {
-	if (sDevicePath == NULL || pPartiSizeKB == NULL) {
+	if (sDevicePath == NULL || pPartiSize == NULL) {
 		ERR_PRINT("The argument is NULL!\n");
 		return false;
 	}
-	unsigned int uPathLen = strlen(sDevicePath);
-	if (uPathLen < 5) {
-		ERR_PRINT("Invalid path (%s)!\n", sDevicePath);
-		return false;
-	}
-	const char* sDeviceName = strstr(sDevicePath, "/dev/");
-	if (sDeviceName == NULL) {
-		ERR_PRINT("Invalid path (%s)!\n", sDevicePath);
-		return false;
-	}
-	sDeviceName = sDevicePath + 5;
-
+	const char* sDeviceName = FileUtil::GetBaseName(sDevicePath);
 	char sFilePath[64] = {0};
 	if (StringUtil::Snprintf(sFilePath, sizeof(sFilePath), "/sys/class/block/%s/size", sDeviceName) == false) {
 		ERR_PRINT("Get file path failed!\n");
@@ -213,12 +203,24 @@ bool FileUtil::GetPartitionSize(const char* sDevicePath, long unsigned int *pPar
 	}
 	sPartiSize[uReadSize - 1] = '\0';
 
-	if (StringUtil::StrToULInt(sPartiSize, pPartiSizeKB) == false) {
+	unsigned long int uPartiSizeKB = 0;
+	if (StringUtil::StrToULInt(sPartiSize, &uPartiSizeKB) == false) {
 		ERR_PRINT("Convert string (%s) to unsigned long integer failed!\n", sPartiSize);
 		return false;
 	}
-	*pPartiSizeKB /= 2;
+	uPartiSizeKB /= 2;
+	*pPartiSize = uPartiSizeKB * 1024;
 	return true;
+}
+
+const char* FileUtil::GetBaseName(const char* sFilePath)
+{
+	return basename((char*)sFilePath);
+}
+
+const char* FileUtil::GetDirectoryName(const char* sFilePath)
+{
+	return dirname((char*)sFilePath);
 }
 
 File::File()
@@ -338,7 +340,6 @@ bool File::ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize
 			sLine[*pReadSize - 1] = 0;
 		}
 	}
-
 	return true;
 }
 
