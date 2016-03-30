@@ -25,12 +25,16 @@ public:
 	void ShowKeyValue();
 	vector<char>* GetEnvData();
 	unsigned int GetCRC();
+	bool UpdateKeyValue(const char* sKey, const char* sVal = NULL);
+	unsigned long int GetPartitionSize();
+	map<string, string>* GetKeyValueTable();
 
 private:
 	map<string, string> m_KeyValMap;
 	unsigned int		m_uCrc;
 	unsigned int		m_uCrcSize;
 	vector<char>		m_EnvData;
+	unsigned long int m_ulPartiSize;
 };
 
 
