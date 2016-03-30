@@ -22,6 +22,7 @@ public:
 	bool AppendFile(const char* sFile);
 	bool IsFileExisting();
 	bool ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize);
+	bool ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize, char cDelimit);
 	bool IsEOF();
 	FILE* GetFD();
 	bool Close();
@@ -34,17 +35,18 @@ protected:
 class FileUtil
 {
 public:
-	static FILE*Open(const char *filename, const char *sMode);
-	static bool Close(FILE *fp);
-	static bool Write(const void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile);
-	static bool Read(void *pData, size_t uDataSize, size_t uNumElement, FILE *pFile, unsigned int *uReadSize);
-	static bool GetFileSize(const char *filename, long unsigned int *pSize);
-	static bool GetFileAccessTime(const char *filename, struct timespec *pTime);
-	static bool GetFileModTime(const char *filename, struct timespec *pTime);
+	static FILE*Open(const char* filename, const char* sMode);
+	static bool Close(FILE* fp);
+	static bool Write(const void* pData, size_t uDataSize, size_t uNumElement, FILE* pFile);
+	static bool Read(void* pData, size_t uDataSize, size_t uNumElement, FILE* pFile, unsigned int* uReadSize);
+	static bool GetFileSize(const char* filename, long unsigned int* pSize);
+	static bool GetFileAccessTime(const char* filename, struct timespec* pTime);
+	static bool GetFileModTime(const char* filename, struct timespec *pTime);
 	static bool CopyFile(const char* sSrc, const char* sDest);
-	static bool CopyFile(FILE *fpSrc, FILE *fpDst);
+	static bool CopyFile(FILE* fpSrc, FILE* fpDst);
 	static bool Symlink(const char* sOldPath, const char* sNewPath);
 	static bool Unlink(const char* sFilePath);
+	static bool GetPartitionSize(const char* sFilePath, long unsigned int* pPartiSizeKB);
 };
 
 

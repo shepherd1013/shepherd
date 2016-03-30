@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "debug.h"
+#include "string_util.h"
 
 FILE* FileUtil::Open(const char *sFilename, const char *sMode)
 {
@@ -169,6 +170,57 @@ bool FileUtil::Unlink(const char* sFilePath)
 	return true;
 }
 
+bool FileUtil::GetPartitionSize(const char* sDevicePath, long unsigned int *pPartiSizeKB)
+{
+	if (sDevicePath == NULL || pPartiSizeKB == NULL) {
+		ERR_PRINT("The argument is NULL!\n");
+		return false;
+	}
+	unsigned int uPathLen = strlen(sDevicePath);
+	if (uPathLen < 5) {
+		ERR_PRINT("Invalid path (%s)!\n", sDevicePath);
+		return false;
+	}
+	const char* sDeviceName = strstr(sDevicePath, "/dev/");
+	if (sDeviceName == NULL) {
+		ERR_PRINT("Invalid path (%s)!\n", sDevicePath);
+		return false;
+	}
+	sDeviceName = sDevicePath + 5;
+
+	char sFilePath[64] = {0};
+	if (StringUtil::Snprintf(sFilePath, sizeof(sFilePath), "/sys/class/block/%s/size", sDeviceName) == false) {
+		ERR_PRINT("Get file path failed!\n");
+		return false;
+	}
+
+	FILE *fp = FileUtil::Open(sFilePath, "r");
+	if (fp == NULL) {
+		ERR_PRINT("Open file (%s) error!\n", sFilePath);
+		return false;
+	}
+
+	unsigned int uReadSize = 0;
+	char sPartiSize[32] = {0};
+	if (FileUtil::Read(sPartiSize, 1, sizeof(sPartiSize), fp, &uReadSize) == false) {
+		ERR_PRINT("Read partition (%s) size error!\n", sDeviceName);
+		return false;
+	}
+
+	if (FileUtil::Close(fp) == false) {
+		ERR_PRINT("Close file error!\n");
+		return false;
+	}
+	sPartiSize[uReadSize - 1] = '\0';
+
+	if (StringUtil::StrToULInt(sPartiSize, pPartiSizeKB) == false) {
+		ERR_PRINT("Convert string (%s) to unsigned long integer failed!\n", sPartiSize);
+		return false;
+	}
+	*pPartiSizeKB /= 2;
+	return true;
+}
+
 File::File()
 :m_fp(NULL)
 {
@@ -287,6 +339,35 @@ bool File::ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize
 		}
 	}
 
+	return true;
+}
+
+bool File::ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize, char cDelimit)
+{
+	if (m_fp == NULL) {
+		m_fp = FileUtil::Open(m_sFilePath, "r+");
+		if (m_fp == NULL) {
+			ERR_PRINT("FileUtil::Open() error!\n");
+			return false;
+		}
+	}
+
+	char cData = 0;
+	unsigned int uIdx = 0;
+	for (uIdx = 0; uIdx < uLineSize; ++uIdx) {
+		cData = (char)fgetc(m_fp);
+		if (this->IsEOF()) {
+			break;
+		}
+		if (cData == cDelimit) {
+			sLine[uIdx] = cData;
+			++uIdx;
+			break;
+		} else {
+			sLine[uIdx] = cData;
+		}
+	}
+	*pReadSize = uIdx;
 	return true;
 }
 
