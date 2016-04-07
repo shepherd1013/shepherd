@@ -14,7 +14,7 @@
 
 using namespace std;
 
-#define BUF_SIZE 4096
+#define BUF_SIZE 16384
 #define CRC_SIZE 4
 
 class UbootEnvParser: public File
@@ -22,7 +22,7 @@ class UbootEnvParser: public File
 public:
 	UbootEnvParser(const char* sFile);
 	bool LoadFile(const char* sFile);
-	void ShowKeyValue();
+	void ShowKeyValue(const char* sKey = NULL);
 	vector<char>* GetEnvData();
 	unsigned int GetCRC();
 	bool UpdateKeyValue(const char* sKey, const char* sVal = NULL);
@@ -32,7 +32,6 @@ public:
 private:
 	map<string, string> m_KeyValMap;
 	unsigned int		m_uCrc;
-	unsigned int		m_uCrcSize;
 	vector<char>		m_EnvData;
 	unsigned long int m_ulPartiSize;
 };

@@ -12,7 +12,6 @@
 UbootEnvParser::UbootEnvParser(const char* sFile): File(sFile)
 {
 	m_uCrc = 0;
-	m_uCrcSize = sizeof(m_uCrc);
 	if (this->LoadFile(sFile) == false) {
 		ERR_PRINT("Load file (%s) failed!\n", sFile);
 		return;
@@ -22,7 +21,7 @@ UbootEnvParser::UbootEnvParser(const char* sFile): File(sFile)
 bool UbootEnvParser::LoadFile(const char* sFile)
 {
 	unsigned int uReadSize = 0;
-	if (this->Read(&m_uCrc, 1, m_uCrcSize, &uReadSize) == false) {
+	if (this->Read(&m_uCrc, 1, CRC_SIZE, &uReadSize) == false) {
 		ERR_PRINT("Read checksum failed!\n");
 		return false;
 	}
@@ -32,7 +31,7 @@ bool UbootEnvParser::LoadFile(const char* sFile)
 		return false;
 	}
 
-	long unsigned int ulEnvDataSize = m_ulPartiSize - m_uCrcSize;
+	long unsigned int ulEnvDataSize = m_ulPartiSize - CRC_SIZE;
 	char sBuf[BUF_SIZE];
 	const char* sKey = NULL;
 	const char* sVal = NULL;
@@ -40,11 +39,15 @@ bool UbootEnvParser::LoadFile(const char* sFile)
 	char *pToken = NULL;
 	long unsigned int ulReadTotal = 0;
 	do {
-		bzero(sBuf, BUF_SIZE);
+//		bzero(sBuf, BUF_SIZE);
 		if (this->ReadLine(sBuf, BUF_SIZE, &uReadSize, cDelim) == false) {
 			ERR_PRINT("Read line with failed!\n");
 			return false;
 		}
+
+//		if (sBuf[0] == 0 || sBuf[0] == 0xff) {
+//			break;
+//		}
 
 		ulReadTotal += uReadSize;
 		if (uReadSize == 0) {
@@ -55,7 +58,7 @@ bool UbootEnvParser::LoadFile(const char* sFile)
 			}
 		}
 
-		m_EnvData.insert(m_EnvData.end(), &sBuf[0], &sBuf[uReadSize]);
+//		m_EnvData.insert(m_EnvData.end(), &sBuf[0], &sBuf[uReadSize]);
 
 		sKey = sBuf;
 		pToken = strstr(sBuf, "=");
@@ -66,16 +69,23 @@ bool UbootEnvParser::LoadFile(const char* sFile)
 		*pToken = '\0';
 
 		m_KeyValMap.insert(pair<string, string>(sKey, sVal));
-
 	} while (true);
 	return true;
 }
 
-void UbootEnvParser::ShowKeyValue()
+void UbootEnvParser::ShowKeyValue(const char* sKey)
 {
-	for (map<string, string>::iterator it = m_KeyValMap.begin(); it != m_KeyValMap.end(); it++) {
-		printf("%s=%s\n", it->first.c_str(), it->second.c_str());
+	if (sKey == NULL) {
+		for (map<string, string>::iterator it = m_KeyValMap.begin(); it != m_KeyValMap.end(); it++) {
+			printf("%s=%s\n", it->first.c_str(), it->second.c_str());
+		}
+	} else {
+		map<string, string>::iterator it = m_KeyValMap.find(sKey);
+		if (it != m_KeyValMap.end()) {
+			printf("%s=%s\n", it->first.c_str(), it->second.c_str());
+		}
 	}
+
 }
 
 vector<char>* UbootEnvParser::GetEnvData()
