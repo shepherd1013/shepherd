@@ -60,41 +60,50 @@ bool StringUtil::StrToLInt(const char* sInput, long int *pOutput, int nBase)
 	return true;
 }
 
-bool StringUtil::Replace(char* sData, unsigned int uBufSize, const char* sOldKey, const char* sNewKey)
+bool StringUtil::Replace(const char* OldStr, char* sNewStr, unsigned int uNewStrBufSize, const char* sOldKey, const char* sNewKey)
 {
-	if (sData == NULL || uBufSize == 0 || sOldKey == NULL || sNewKey == NULL) {
+	if (OldStr == NULL || sNewStr == NULL || uNewStrBufSize == 0 || sOldKey == NULL || sNewKey == NULL) {
 		ERR_PRINT("Invalid argument!\n");
 		return false;
 	}
-	char sTmp[1024] = {0};
-	char *pStart = sData;
-	char *pFound = NULL;
+	bzero(sNewStr, uNewStrBufSize);
+	const char *pStart = OldStr;
+	const char *pFound = NULL;
 	unsigned int uStrLen = 0;
+	unsigned int uTotalLen = 0;
 	unsigned int uOldKeyLen = strlen(sOldKey);
 	unsigned int uNewKeyLen = strlen(sNewKey);
 	do {
 		pFound = strstr(pStart, sOldKey);
 		if (pFound == NULL) {
 			if (*pStart != '\0') {
-				strcat(sTmp, pStart);
+				uTotalLen += strlen(pStart);
+				if (uTotalLen > uNewStrBufSize) {
+					ERR_PRINT("The buffer size (%u) isn't enough!\n", uNewStrBufSize);
+					return false;
+				}
+				strcat(sNewStr, pStart);
 			}
 			break;
 		}
 		uStrLen = (unsigned int)(pFound - pStart);
 		if(uStrLen != 0) {
-			strncat(sTmp, pStart, uStrLen);
+			uTotalLen += uStrLen;
+			if (uTotalLen > uNewStrBufSize) {
+				ERR_PRINT("The buffer size (%u) isn't enough!\n", uNewStrBufSize);
+				return false;
+			}
+			strncat(sNewStr, pStart, uStrLen);
 		}
 		if (uNewKeyLen != 0) {
-			strcat(sTmp, sNewKey);
+			uTotalLen += uNewKeyLen;
+			if (uTotalLen > uNewStrBufSize) {
+				ERR_PRINT("The buffer size (%u) isn't enough!\n", uNewStrBufSize);
+				return false;
+			}
+			strcat(sNewStr, sNewKey);
 		}
 		pStart = pFound + uOldKeyLen;
 	} while (true);
-
-	if (strlen(sTmp) > uBufSize) {
-		ERR_PRINT("The buffer size isn't enough!\n");
-		return false;
-	}
-	bzero(sData, uBufSize);
-	strncpy(sData, sTmp, uBufSize);
 	return true;
 }

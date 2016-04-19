@@ -15,7 +15,7 @@ public:
 	static bool Snprintf(char* sBuf, size_t uBufSize, const char* format, ...);
 	static bool StrToULInt(const char* sInput, unsigned long int *pOutput, int nBase = 0);
 	static bool StrToLInt(const char* sInput, long int *pOutput, int nBase = 0);
-	static bool Replace(char* sData, unsigned int uBufSize, const char* sOldKey, const char* sNewKey);
+	static bool Replace(const char* OldStr, char* sNewStr, unsigned int uBufSize, const char* sOldKey, const char* sNewKey);
 };
 
 
