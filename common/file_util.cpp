@@ -247,7 +247,7 @@ File::~File()
 
 bool File::Load(const char *sFilePath)
 {
-	strncpy(m_sFilePath, sFilePath, FILE_PATH_MAX);
+	strncpy(m_sFilePath, sFilePath, FILE_UTIL_FILE_PATH_MAX);
 //	m_sFilePath = sFilePath;
 	if (FileUtil::Close(m_fp) == false) {
 		ERR_PRINT("FileUtil::Close() error!\n");
