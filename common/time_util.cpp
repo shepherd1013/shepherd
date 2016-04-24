@@ -24,13 +24,20 @@ struct timespec TimeUtil::DiffTime(struct timespec tTimeA, struct timespec tTime
 {
 	struct timespec tTime;
 	long int nNanoSecDiff;
-	if (tTimeA.tv_sec >= tTimeB.tv_sec) {
+
+	if (tTimeA.tv_sec == tTimeB.tv_sec) {
+		tTime.tv_sec = 0;
+		nNanoSecDiff = tTimeA.tv_nsec - tTimeB.tv_nsec;
+		tTime.tv_nsec = abs((int)nNanoSecDiff);
+		return tTime;
+	} else if (tTimeA.tv_sec > tTimeB.tv_sec) {
 		tTime.tv_sec = tTimeA.tv_sec - tTimeB.tv_sec;
 		nNanoSecDiff = tTimeA.tv_nsec - tTimeB.tv_nsec;
 	} else {
 		tTime.tv_sec = tTimeB.tv_sec - tTimeA.tv_sec;
 		nNanoSecDiff = tTimeB.tv_nsec - tTimeA.tv_nsec;
 	}
+
 	if (nNanoSecDiff < 0) {
 		tTime.tv_sec--;
 		tTime.tv_nsec = 1000000000 + nNanoSecDiff;
@@ -39,4 +46,11 @@ struct timespec TimeUtil::DiffTime(struct timespec tTimeA, struct timespec tTime
 	}
 //	DBG_PRINT("Time diff: %ld.%ld\n", tTime.tv_sec, tTime.tv_nsec);
 	return tTime;
+}
+
+
+unsigned long int	TimeUtil::SpecTimeToMS(struct timespec tTime)
+{
+	unsigned long int uTimeDiffMSec = tTime.tv_sec * 1000 + tTime.tv_nsec / 1000000;
+	return uTimeDiffMSec;
 }

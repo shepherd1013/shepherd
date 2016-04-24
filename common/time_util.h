@@ -19,7 +19,8 @@ public:
 		long     tv_nsec;       //	nanoseconds
 	};
 */
-	static struct timespec DiffTime(struct timespec tTimeA, struct timespec tTimeB);
+	static struct timespec		DiffTime(struct timespec tTimeA, struct timespec tTimeB);
+	static unsigned long int	SpecTimeToMS(struct timespec tTime);
 };
 
 
