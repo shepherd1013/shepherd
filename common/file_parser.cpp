@@ -194,6 +194,34 @@ bool IniFileParser::SetKeyValue(const char* sKey, const char* sVal)
 	return true;
 }
 
+bool IniFileParser::SetKeyValue(const char* sKey, bool bVal)
+{
+	char sVal[8] = {0};
+	if (StringUtil::Snprintf(sVal, sizeof(sVal), "%d", bVal) == false) {
+		ERR_PRINT("Compose key value failed!\n");
+		return false;
+	}
+	if (this->SetKeyValue(sKey, sVal) == false) {
+		return false;
+	}
+	return true;
+}
+
+bool IniFileParser::SetKeyValue(const char* sKey, int nVal)
+{
+	char sVal[16] = {0};
+	if (StringUtil::Snprintf(sVal, sizeof(sVal), "%d", nVal) == false) {
+		ERR_PRINT("Compose key value failed!\n");
+		return false;
+	}
+	if (this->SetKeyValue(sKey, sVal) == false) {
+		return false;
+	}
+	return true;
+}
+
+
+
 void IniFileParser::ShowKeyValue()
 {
 	if (m_KeyValMap.empty()) {

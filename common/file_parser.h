@@ -41,6 +41,8 @@ public:
 	bool SaveFile();
 	const char* GetKeyValue(const char* sKey);
 	bool SetKeyValue(const char* sKey, const char* sVal);
+	bool SetKeyValue(const char* sKey, bool bVal);
+	bool SetKeyValue(const char* sKey, int nVal);
 	void ShowKeyValue();
 //	bool GetKeyIntValue(const char* sKey, int *pVal);
 //	bool GetKeyUIntValue(const char* sKey, unsigned int *pVal);
