@@ -23,6 +23,7 @@ public:
 	virtual bool SetPinDirectionToOutput();
 	virtual bool SetPinDirectionToInput();
 	virtual bool ReadPinValue(unsigned int *pValue);
+	virtual bool ReadPinValue(int *pValue);
 	virtual bool SetPinValueToOne();
 	virtual bool SetPinValueToZero();
 

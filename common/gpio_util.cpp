@@ -128,6 +128,16 @@ bool GpioUtil::SetPinDirectionToInput()
 	return true;
 }
 
+bool GpioUtil::ReadPinValue(int *pValue)
+{
+	unsigned int uValue = 0;
+	if (this->ReadPinValue(&uValue) == false) {
+		return false;
+	}
+	*pValue = uValue;
+	return true;
+}
+
 bool GpioUtil::ReadPinValue(unsigned int *pValue)
 {
 	const char *sDeviceName = "/dev/mem";
