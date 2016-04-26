@@ -223,6 +223,15 @@ const char* FileUtil::GetDirectoryName(const char* sFilePath)
 	return dirname((char*)sFilePath);
 }
 
+bool FileUtil::FileExist(const char* sFilePath)
+{
+	struct stat fileStat;
+	if (stat(sFilePath, &fileStat) < 0) {
+		return false;
+	}
+	return true;
+}
+
 File::File()
 :m_fp(NULL)
 {
