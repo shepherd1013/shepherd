@@ -27,7 +27,7 @@ public:
 	bool ReadLineWithToken(char *sLine, unsigned int uLineSize, const char *sToken = "\n");
 
 protected:
-	FILE *fFd;
+	FILE* fFd;
 };
 
 class IniFileParser: public File
@@ -37,16 +37,13 @@ public:
 	IniFileParser(const char *sIniFile);
 	virtual ~IniFileParser();
 
-	bool LoadFile(const char* sIniFile);
+	virtual bool Load(const char* sIniFile);
 	bool SaveFile();
 	const char* GetKeyValue(const char* sKey);
 	bool SetKeyValue(const char* sKey, const char* sVal);
 	bool SetKeyValue(const char* sKey, bool bVal);
 	bool SetKeyValue(const char* sKey, int nVal);
 	void ShowKeyValue();
-//	bool GetKeyIntValue(const char* sKey, int *pVal);
-//	bool GetKeyUIntValue(const char* sKey, unsigned int *pVal);
-//	bool GetKeyBoolValue(const char* sKey, bool *pVal);
 	bool GetKeyValue(const char* sKey, int *pVal);
 	bool GetKeyValue(const char* sKey, unsigned int *pVal);
 	bool GetKeyValue(const char* sKey, bool *pVal);
