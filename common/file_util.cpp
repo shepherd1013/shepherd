@@ -36,6 +36,7 @@ bool FileUtil::Close(FILE *fp)
 			ERR_PRINT("fclose() error: %s!\n", strerror(nRet));
 			return false;
 		}
+		fp = NULL;
 	}
 	return true;
 }
@@ -241,7 +242,7 @@ File::File()
 File::File(const char *sFilePath)
 :m_fp(NULL)
 {
-//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+//	DBG_PRINT("Run %s(const char *sFilePath) ...\n", __FUNCTION__);
 	this->Load(sFilePath);
 }
 
@@ -256,8 +257,9 @@ File::~File()
 
 bool File::Load(const char *sFilePath)
 {
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+	bzero(m_sFilePath, sizeof(m_sFilePath));
 	strncpy(m_sFilePath, sFilePath, FILE_UTIL_FILE_PATH_MAX);
-//	m_sFilePath = sFilePath;
 	if (FileUtil::Close(m_fp) == false) {
 		ERR_PRINT("FileUtil::Close() error!\n");
 		return false;
@@ -318,10 +320,7 @@ bool File::AppendFile(const char* sFile)
 
 bool File::IsFileExisting()
 {
-	if (fopen(m_sFilePath, "r") == NULL) {
-		return false;
-	}
-	return true;
+	return FileUtil::FileExist(m_sFilePath);
 }
 
 bool File::ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize)

@@ -15,17 +15,17 @@ class File
 public:
 	File();
 	File(const char *sFilePath);
-	~File();
-	bool Load(const char *sFilePath);
-	bool Read(void *pData, size_t uDataSize, size_t uNumElement, unsigned int *uReadSize);
-	bool Write(const void *pData, size_t uDataSize, size_t uNumElement);
-	bool AppendFile(const char* sFile);
-	bool IsFileExisting();
-	bool ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize);
-	bool ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize, char cDelimit);
-	bool IsEOF();
-	FILE* GetFD();
-	bool Close();
+	virtual ~File();
+	virtual bool	Load(const char *sFilePath);
+	bool			Read(void *pData, size_t uDataSize, size_t uNumElement, unsigned int *uReadSize);
+	bool			Write(const void *pData, size_t uDataSize, size_t uNumElement);
+	bool			AppendFile(const char* sFile);
+	bool			IsFileExisting();
+	bool			ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize);
+	bool			ReadLine(char *sLine, unsigned int uLineSize, unsigned int *pReadSize, char cDelimit);
+	bool			IsEOF();
+	FILE*			GetFD();
+	bool			Close();
 
 protected:
 	char	m_sFilePath[FILE_UTIL_FILE_PATH_MAX];
