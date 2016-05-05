@@ -59,8 +59,7 @@ public:
 	static bool DuplicateFD(int nOldFD, int *nNewFD);
 	static bool Listen(int sockfd, int nPendingNum);
 	static bool Accept(int sockfd, struct sockaddr *RemoteAddr, socklen_t *RemoteAddrLen, int *nAcceptedFD);
-	static bool Send(int sockfd, const void *buf, size_t len, int flags);
-	static bool Send(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr* RemoteAddr, socklen_t RemoteAddrLen);
+	static bool Send(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr* RemoteAddr = NULL, socklen_t RemoteAddrLen = 0, unsigned int uTimeoutMS = 1000);
 	static bool IsPortValid(unsigned int uPort);
 };
 
@@ -68,12 +67,12 @@ class Socket
 {
 public:
 	Socket();
-	~Socket();
+	virtual ~Socket();
 	int GetFD();
-	bool Send(const char *SendData, unsigned int uDataSize);
+	virtual bool Send(const char *SendData, unsigned int uDataSize, unsigned int uTimeoutMS = 1000);
 	bool Wait(time_t tMS);
 	bool Wait(time_t tMS, vector<int> WaitFDList, int nEventFD);
-	bool Recv(char* sBuf, unsigned int uBufSize);
+	bool Recv(char* sBuf, unsigned int uBufSize, unsigned int* pRecvLen = NULL);
 
 protected:
 	int m_sFD;
@@ -95,6 +94,9 @@ protected:
 	char 			m_sLocalPath[IPC_PATH_MAX];
 	char 			m_sRemotePath[IPC_PATH_MAX];
 	sockaddr_un		m_unRemoteAddr;
+
+	bool Init();
+	bool Bind();
 };
 
 #endif /* SOCKET_UTIL_H_ */

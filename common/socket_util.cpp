@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <sys/un.h>
 #include <stddef.h>
+#include "time_util.h"
 
 bool SocketUtil::Socket(int domain, int type, int protocol, int *sFD)
 {
@@ -229,7 +230,7 @@ bool SocketUtil::RecvFrom(int sockfd, void *buf, size_t len, int flags, struct s
 	int nRet = recvfrom(sockfd, buf, len, flags, RemoteAddr, RemoteAddrLen);
 	if (nRet < 0) {
 		nRet = errno;
-		ERR_PRINT("recvfrom() error: %s!\n", strerror(nRet));
+		ERR_PRINT("recvfrom() error: %s!, errno: %d\n", strerror(nRet), nRet);
 		return false;
 	}
 	*uRecvDataLen = nRet;
@@ -242,7 +243,7 @@ bool SocketUtil::RecvFrom(int sockfd, void *buf, size_t len, int flags, struct s
 
 bool SocketUtil::SendTo(int sockfd, const void *buf, size_t len, int flags, struct sockaddr *RemoteAddr, socklen_t RemoteAddrLen)
 {
-	int nRet = sendto(sockfd, buf, len, 0, RemoteAddr, RemoteAddrLen);
+	int nRet = sendto(sockfd, buf, len, flags, RemoteAddr, RemoteAddrLen);
 	if (nRet < 0) {
 		nRet = errno;
 		ERR_PRINT("SendTo() error: %s!\n", strerror(nRet));
@@ -295,62 +296,71 @@ bool SocketUtil::Accept(int sockfd, struct sockaddr *RemoteAddr, socklen_t *Remo
 	return true;
 }
 
-bool SocketUtil::Send(int sockfd, const void *buf, size_t len, int flags)
+bool SocketUtil::Send(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr* RemoteAddr, socklen_t RemoteAddrLen, unsigned int uTimeoutMS)
 {
 	int nSndRet = 0;
 	char* pBuf = (char*)buf;
-	int nDataSize = len;
+	unsigned int nDataSize = len;
 	unsigned int uSndTotal = 0;
-	while (true) {
-		nSndRet = send(sockfd, pBuf, nDataSize, 0);
-		if (nSndRet <= 0) {
-			if (nSndRet < 0) {
-				nSndRet = errno;
-				if (nSndRet != ECONNRESET) {
-					ERR_PRINT("send() error: %s!\n", strerror(nSndRet));
-				}
-			} else {
-				DBG_PRINT("Client disconnect!\n");
-			}
-			return false;
-		}
-
-		uSndTotal += nSndRet;
-		if (nSndRet != nDataSize) {
-			DBG_PRINT("Resend data!\n");
-			nDataSize -= nSndRet;
-			pBuf += nSndRet;
-			continue;
-		}
-		break;
+	struct timespec tStart;
+	struct timespec tNow;
+	struct timespec tDiff;
+	bzero(&tStart, sizeof(tStart));
+	bzero(&tNow, sizeof(tNow));
+	bzero(&tDiff, sizeof(tDiff));
+	unsigned long int uTimeDiffMSec = 0;
+	if (TimeUtil::GetUptime(&tStart) == false) {
+		ERR_PRINT("Get uptime error!\n");
+		return false;
 	}
-//	DBG_PRINT("Send total size: %u\n", uSndTotal);
-	return true;
-}
-
-bool SocketUtil::Send(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr* RemoteAddr, socklen_t RemoteAddrLen)
-{
-	int nSndRet = 0;
-	char* pBuf = (char*)buf;
-	int nDataSize = len;
-	unsigned int uSndTotal = 0;
 	while (true) {
 		nSndRet = sendto(sockfd, pBuf, nDataSize, 0, RemoteAddr, RemoteAddrLen);
-//		DBG_PRINT("nSndRet: %d\n", nSndRet);
-		if (nSndRet <= 0) {
-			if (nSndRet < 0) {
-				nSndRet = errno;
-				if (nSndRet != ECONNRESET) {
-					ERR_PRINT("sendto() error: %s!\n", strerror(nSndRet));
+		DBG_PRINT("nSndRet: %d\n", nSndRet);
+		if (nSndRet < 0) {
+			nSndRet = errno;
+			if (nSndRet == EAGAIN) {
+				if (TimeUtil::GetUptime(&tNow) == false) {
+					ERR_PRINT("Get uptime error!\n");
+					return false;
 				}
+				tDiff = TimeUtil::DiffTime(tStart, tNow);
+				uTimeDiffMSec = TimeUtil::SpecTimeToMS(tDiff);
+				if (uTimeDiffMSec >= uTimeoutMS) {
+					ERR_PRINT("Send timeout!\n");
+					return false;
+				}
+				usleep(100*1000);
+				continue;
 			} else {
-				DBG_PRINT("Client disconnect!\n");
+				ERR_PRINT("sendto() error: %s!, errno: %d\n", strerror(nSndRet), nSndRet);
+				return false;
 			}
+		}
+
+		if (nSndRet == 0) {
+			DBG_PRINT("Client disconnected!\n");
 			return false;
 		}
 
+//		if (nSndRet <= 0) {
+//			if (nSndRet < 0) {
+//				nSndRet = errno;
+////				if (nSndRet != ECONNRESET && nSndRet != EAGAIN) {
+//				if (nSndRet != EAGAIN) {
+//					ERR_PRINT("sendto() error: %s!, errno: %d\n", strerror(nSndRet), nSndRet);
+//					return false;
+//				}
+//			} else {
+//				DBG_PRINT("Client disconnect!\n");
+//				return false;
+//			}
+//
+//			usleep(1000*1000);
+//			continue;
+//		}
+
 		uSndTotal += nSndRet;
-		if (nSndRet != nDataSize) {
+		if (uSndTotal != nDataSize) {
 			DBG_PRINT("Resend data!\n");
 			nDataSize -= nSndRet;
 			pBuf += nSndRet;
@@ -371,6 +381,7 @@ bool SocketUtil::IsPortValid(unsigned int uPort)
 
 Socket::Socket()
 {
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
 	m_sFD = -1;
 	m_pRemoteAddr = NULL;
 	m_uRemoteAddrLen = 0;
@@ -378,7 +389,7 @@ Socket::Socket()
 
 Socket::~Socket()
 {
-	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+//	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
 	bool bRet = SocketUtil::Close(m_sFD);
 	if (bRet == false) {
 		ERR_PRINT("SocketUtil::Close() error!\n");
@@ -410,19 +421,22 @@ bool Socket::Wait(time_t tMS, vector<int> WaitFDList, int nEventFD)
 	return true;
 }
 
-bool Socket::Recv(char* sBuf, unsigned int uBufSize)
+bool Socket::Recv(char* sBuf, unsigned int uBufSize, unsigned int* pRecvLen)
 {
 	unsigned int uRecvLen;
 	if (SocketUtil::RecvFrom(m_sFD, sBuf, uBufSize, 0, m_pRemoteAddr, &m_uRemoteAddrLen, &uRecvLen) == false) {
 		return false;
 	}
 //	DBG_PRINT("uRecvLen: %u\n", uRecvLen);
+	if (pRecvLen != NULL) {
+		*pRecvLen = uRecvLen;
+	}
 	return true;
 }
 
-bool Socket::Send(const char *SendData, unsigned int uDataSize)
+bool Socket::Send(const char *SendData, unsigned int uDataSize, unsigned int uTimeoutMS)
 {
-	if (SocketUtil::Send(m_sFD, SendData, uDataSize, 0, m_pRemoteAddr, m_uRemoteAddrLen) == false) {
+	if (SocketUtil::Send(m_sFD, SendData, uDataSize, 0, m_pRemoteAddr, m_uRemoteAddrLen, uTimeoutMS) == false) {
 		return false;
 	}
 	return true;
@@ -430,23 +444,19 @@ bool Socket::Send(const char *SendData, unsigned int uDataSize)
 
 SocketIPC::SocketIPC()
 {
-	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
-	m_bIsConnected = false;
-	m_uRemoteAddrLen = sizeof(m_unRemoteAddr);
-	bzero(&m_unRemoteAddr, m_uRemoteAddrLen);
-	m_pRemoteAddr = (struct sockaddr*)&m_unRemoteAddr;
+	if (this->Init() == false) {
+		ERR_PRINT("Initialize error!\n");
+		return;
+	}
 }
 
 SocketIPC::SocketIPC(const char *sLocalPath, const char *sRemotePath)
 {
 	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
-	m_bIsConnected = false;
-	m_uRemoteAddrLen = sizeof(m_unRemoteAddr);
-	bzero(&m_unRemoteAddr, m_uRemoteAddrLen);
-	m_pRemoteAddr = (struct sockaddr*)&m_unRemoteAddr;
-
-	bzero(m_sLocalPath, IPC_PATH_MAX);
-	bzero(m_sRemotePath, IPC_PATH_MAX);
+	if (this->Init() == false) {
+		ERR_PRINT("Initialize error!\n");
+		return;
+	}
 	if (this->Connect(sLocalPath, sRemotePath) == false) {
 		ERR_PRINT("Connect socket error!\n");
 		return;
@@ -465,11 +475,46 @@ SocketIPC::~SocketIPC()
 	}
 }
 
+bool SocketIPC::Init()
+{
+	DBG_PRINT("Run %s() ...\n", __FUNCTION__);
+	m_bIsConnected = false;
+	m_uRemoteAddrLen = sizeof(m_unRemoteAddr);
+	bzero(&m_unRemoteAddr, m_uRemoteAddrLen);
+	m_pRemoteAddr = (struct sockaddr*)&m_unRemoteAddr;
+	bzero(m_sLocalPath, IPC_PATH_MAX);
+	bzero(m_sRemotePath, IPC_PATH_MAX);
+
+//	if (SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &m_sFD) == false) {
+	if (SocketUtil::Socket(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK, 0, &m_sFD) == false) {
+		ERR_PRINT("Create socket error!\n");
+		return false;
+	}
+
+	return true;
+}
+
+bool SocketIPC::Bind()
+{
+	unsigned int uSize;
+	struct sockaddr_un un;
+	bzero(&un, sizeof(un));
+	strncpy(un.sun_path, m_sLocalPath, sizeof(un.sun_path));
+	un.sun_family = AF_UNIX;
+	uSize = offsetof(struct sockaddr_un, sun_path) + strlen(un.sun_path);
+	if (SocketUtil::Bind(m_sFD, (struct sockaddr *)&un, uSize) == false) {
+		ERR_PRINT("Bind socket error!\n");
+		return false;
+	}
+	return true;
+}
+
 bool SocketIPC::Connect(const char *sLocalPath, const char *sRemotePath)
 {
 	if (m_bIsConnected) {
 		return true;
 	}
+
 	if (sLocalPath == NULL || strlen(sLocalPath) == 0) {
 		ERR_PRINT("The local path is NULL or empty!\n");
 		return false;
@@ -477,28 +522,13 @@ bool SocketIPC::Connect(const char *sLocalPath, const char *sRemotePath)
 	strncpy(m_sLocalPath, sLocalPath, IPC_PATH_MAX);
 	if (sRemotePath != NULL) {
 		strncpy(m_sRemotePath, sRemotePath, IPC_PATH_MAX);
-	}
-
-	bool bRet;
-	bRet = SocketUtil::Socket(AF_UNIX, SOCK_DGRAM, 0, &m_sFD);
-	if (bRet == false) {
-		ERR_PRINT("Create socket error!\n");
-		return false;
-	}
-
-	int size;
-	struct sockaddr_un un;
-	memset(&un, 0, sizeof(un));
-	strncpy(un.sun_path, sLocalPath, sizeof(un.sun_path));
-	un.sun_family = AF_UNIX;
-	size = offsetof(struct sockaddr_un, sun_path) + strlen(un.sun_path);
-	if (SocketUtil::Bind(m_sFD, (struct sockaddr *)&un, size) == false) {
-		return false;
-	}
-
-	if (sRemotePath != NULL) {
 		m_unRemoteAddr.sun_family = AF_UNIX;
 		strncpy(m_unRemoteAddr.sun_path, sRemotePath, sizeof(m_unRemoteAddr.sun_path));
+	}
+
+	if (this->Bind() == false) {
+		ERR_PRINT("Bind error!\n");
+		return false;
 	}
 	m_bIsConnected = true;
 	return true;
