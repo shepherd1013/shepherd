@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+#include <math.h>
 #include "debug.h"
 #include "string_util.h"
 
@@ -105,5 +106,22 @@ bool StringUtil::Replace(const char* OldStr, char* sNewStr, unsigned int uNewStr
 		}
 		pStart = pFound + uOldKeyLen;
 	} while (true);
+	return true;
+}
+
+bool StringUtil::StrToDouble(const char* sIn, double* dOut)
+{
+	char* pEnd;
+	errno = 0;
+	*dOut = strtod(sIn, &pEnd);
+	int nRet = errno;
+	if ((nRet == ERANGE && *dOut == HUGE_VAL) || (nRet != 0 && *dOut == 0)) {
+		ERR_PRINT("strtod() error: %s!\n", strerror(nRet));
+		return false;
+	}
+	if (*pEnd != '\0') {
+		ERR_PRINT("Invalid digits (%s)!\n", pEnd);
+		return false;
+	}
 	return true;
 }
