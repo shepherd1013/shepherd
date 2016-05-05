@@ -16,9 +16,8 @@ void StrUtilTest::Run()
 
 bool StrUtilTest::DoReplace(const char* sTestData, const char* sTestResult, const char* sOldKey, const char* sNewKey)
 {
-	char sBuf[256] = {0};
-	strcpy(sBuf, sTestData);
-	if (StringUtil::Replace(sBuf, sizeof(sBuf), sOldKey, sNewKey) == false) {
+	char sBuf[64] = {0};
+	if (StringUtil::Replace(sTestData, sBuf, sizeof(sBuf), sOldKey, sNewKey) == false) {
 		ERR_PRINT("Replace string failed!\n");
 		return false;
 	}
@@ -112,6 +111,17 @@ void StrUtilTest::TestReplace()
 	sNewKey = "";
 	sTestData = "abctestabctestabc";
 	sExpectedResult = "abcabcabc";
+	DBG_PRINT("Test Data: %s\n", sTestData);
+	if (this->DoReplace(sTestData, sExpectedResult, sOldKey, sNewKey) == false) {
+		ERR_PRINT("Test failed!\n");
+		return;
+	}
+	DBG_PRINT("Test result: PASS\n");
+
+	sOldKey = "test";
+	sNewKey = "123456789";
+	sTestData = "abctestabctestabctest";
+	sExpectedResult = "abc123456789abc123456789abc123456789";
 	DBG_PRINT("Test Data: %s\n", sTestData);
 	if (this->DoReplace(sTestData, sExpectedResult, sOldKey, sNewKey) == false) {
 		ERR_PRINT("Test failed!\n");
